@@ -1,4 +1,12 @@
-- hosts: 127.0.0.1
+- hosts: pulsarservers
+  vars:
+    #miniconda_prefix: /home/pulsar/conda
+    #miniconda_channels:
+    #  - conda-forge
+    #  - anaconda
+    #  - defaults
+    #miniconda_base_env_packages:
+    #  - mamba
   vars_files:
     - group_vars/secret.yml
   pre_tasks:
@@ -12,13 +20,15 @@
           - libssl-dev
           - virtualenv
           - libgnutls28-dev
-          #- squashfs-tools # needed by singularity roles
+          - squashfs-tools # DEMON: needed by singularity roles
         state: present
         update_cache: yes
       become: yes
   roles:
     #- role: galaxyproject.cvmfs
     #  become: yes
-    #- gantsign.golang
-    #- cyverse-ansible.singularity
+    - gantsign.golang
+    - cyverse-ansible.singularity
     - galaxyproject.pulsar
+    #- role: galaxyproject.miniconda
+    #  become: true

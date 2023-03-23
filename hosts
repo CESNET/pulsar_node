@@ -1,2 +1,2 @@
 [pulsarservers]
-localhost ansible_connection=local ansible_user=ubuntu
+localhost ansible_connection=local ansible_user=root
