@@ -3,8 +3,8 @@
 import poster3 as poster
 # koniec upravy
 
-# Nainstalovat ansible
-apt install ansible -y
+# Nainstalovat ansible a libpbspro-dev
+apt install ansible libpbspro-dev -y
 
 # Vytvorit kluc pre pristup do git repa a zaregistrovat kluc vo svojom profile na githube
 ssh-keygen -t ed25519
