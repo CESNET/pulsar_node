@@ -1,8 +1,3 @@
-## Pravdepodobne nebude nutne!
-# Dalsi problem so zavislostou puslaru na poster lib, ktora nema podporu pre python3, bolo nutne pripisat ako zavislost poster3 a upravit skript venv/lib/python3.10/site-packages/pulsar/client/transport/poster.py
-import poster3 as poster
-# koniec upravy
-
 # Nainstalovat ansible a libpbspro-dev
 apt install ansible libpbspro-dev -y
 
@@ -10,12 +5,13 @@ apt install ansible libpbspro-dev -y
 #PBS_SERVER=meta-pbs.metacentrum.cz
 PBS_SERVER=elixir-pbs.elixir-czech.cz
 
-# instalacia pbs-drmaa-1.0.19 z https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-1.0.19.tar.gz?viasf=1 (ako root)
-cd <pbs-drmaa dir> && ./configure && make && make check && make install
-
 # vytvorit si uzivatela a skupinu:
 groupadd -g 10145 galaxyelixir
 useradd -g 10145 -m -u 2469 -s /bin/bash galaxyelixir
+
+# instalacia pbs-drmaa-1.0.19 z https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-1.0.19.tar.gz?viasf=1 (ako pulsar/galaxy user)
+cd ~ && wget -O pbs-drmaa.tar.gz <pbs-drmaa link> && tar zxf pbs-drmaa.tar.gz
+cd <pbs-drmaa dir> && ./configure && make && make check
 
 # ziskat kerberos kluc pre pulsar/galaxy uzivatela s pristupom na spravny storage a do spravnej PBS queue a pridat si nasledujuce riadky do crontab -e
 BASH_ENV=~/.bashrc
@@ -32,3 +28,32 @@ ssh-keygen -t ed25519
 
 # Stiahnut repo
 git clone <this repo>
+
+# vytvorit trezor
+cd pulsar_node
+openssl rand -base64 24 > .vault-password.txt
+rm group_vars/secret.yml # ak sa jedna o fresh instalaciu
+ansible-vault create group_vars/secret.yml # zadat heslo pre komunikaciu s prislusnou instanciou rabbitmq-server (napr. rabbitmq_password: a-very-long-password)
+
+# spustime playbook
+ansible-playbook pulsar.yml
+
+##########################
+
+## Pravdepodobne nebude nutne!
+# Dalsi problem so zavislostou puslaru na poster lib, ktora nema podporu pre python3, bolo nutne pripisat ako zavislost poster3 a upravit skript venv/lib/python3.10/site-packages/pulsar/client/transport/poster.py
+import poster3 as poster
+# koniec upravy
+
+## Bolo nutne zmenit obsah subora: roles/galaxyproject.pulsar/tasks/paths.yml (task Create Pulsar user-owned directories):
+    - name: Create Pulsar user-owned directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        #owner: "{{ __pulsar_user_name }}"
+        #group: "{{ __pulsar_user_group }}"
+        #mode: "{{ __pulsar_dir_perms }}"
+      with_items: "{{ pulsar_dirs }}"
+      become: yes
+      become_user: "{{ __pulsar_user_name }}"
+## Ak sa nespusti tvrda reinstalacia ansible zavislosti via `ansible-galaxy install -f -p roles -r requirements.yml` tak by nemalo dojst k obnove povodneho obsahu
