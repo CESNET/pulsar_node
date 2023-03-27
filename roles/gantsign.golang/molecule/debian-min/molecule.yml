@@ -8,12 +8,12 @@ driver:
 lint: |
   set -e
   yamllint .
-  ansible-lint
+  ansible-lint .
   flake8
 
 platforms:
   - name: ansible-role-golang-debian-min
-    image: debian:8
+    image: debian:9
 
 provisioner:
   name: ansible

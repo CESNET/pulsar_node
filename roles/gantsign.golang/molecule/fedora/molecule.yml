@@ -8,12 +8,12 @@ driver:
 lint: |
   set -e
   yamllint .
-  ansible-lint
+  ansible-lint .
   flake8
 
 platforms:
   - name: ansible-role-golang-fedora
-    image: fedora:31
+    image: fedora:35
 
 provisioner:
   name: ansible

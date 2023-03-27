@@ -22,11 +22,11 @@ pulsar_separate_privileges: true
 #  dependencies:
 #    - mamba
 
-miniconda_prefix: "{{ pulsar_data_dir }}/conda"
-#miniconda_prefix: "/storage/brno11-elixir/home/galaxyelixir/anaconda3"
+#miniconda_prefix: "{{ pulsar_data_dir }}/conda"
+miniconda_prefix: "/storage/brno11-elixir/home/galaxyelixir/anaconda3"
 conda_prefix: "{{ miniconda_prefix }}"
-conda_exec: "{{ conda_prefix }}/bin/conda"
-#conda_exec: "{{ conda_prefix }}/bin/mamba"
+#conda_exec: "{{ conda_prefix }}/bin/conda"
+conda_exec: "{{ conda_prefix }}/bin/mamba"
 conda_channels:
   - "conda-forge"
   - "bioconda"
@@ -45,9 +45,9 @@ pulsar_systemd_service_name: pulsar
 pulsar_systemd_state: started
 pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
-  - DRMAA_LIBRARY_PATH="/opt/pbs-drmaa-1.0.19/pbs_drmaa/.libs/libdrmaa.so"
+  - DRMAA_LIBRARY_PATH="/home/galaxyelixir/pbs-drmaa-1.0.19/pbs_drmaa/.libs/libdrmaa.so"
 
-pulsar_create_user: true
+pulsar_create_user: false
 pulsar_user:
   name: galaxyelixir
   shell: /bin/bash
@@ -88,8 +88,8 @@ pulsar_yaml_config:
   dependency_resolution:
     resolvers:
       - type: conda
-        auto_init: true
-        #auto_init: false
+        #auto_init: true
+        auto_init: false
         auto_install: true
         ensure_channels: "{{ conda_channels|join(',') }}"
         exec: "{{ conda_exec }}"

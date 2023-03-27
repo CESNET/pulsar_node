@@ -34,8 +34,8 @@
   roles:
     #- role: galaxyproject.cvmfs
     #  become: yes
-    #- gantsign.golang
-    #- cyverse-ansible.singularity
+    - gantsign.golang
+    - cyverse-ansible.singularity
     - galaxyproject.pulsar
     #- role: galaxyproject.miniconda
     #- role: andrewrothstein.miniconda
