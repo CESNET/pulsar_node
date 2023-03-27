@@ -11,7 +11,7 @@ apt install ansible libpbspro-dev -y
 PBS_SERVER=elixir-pbs.elixir-czech.cz
 
 # instalacia pbs-drmaa-1.0.19 z https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-1.0.19.tar.gz?viasf=1 (ako root)
-cd <pbs-drmaa dir> && ./configure && make && make install
+cd <pbs-drmaa dir> && ./configure && make && make check && make install
 
 # ziskat kerberos kluc pre pulsar/galaxy uzivatela s pristupom na spravny storage a do spravnej PBS queue a pridat si nasledujuce riadky do crontab -e
 BASH_ENV=~/.bashrc
