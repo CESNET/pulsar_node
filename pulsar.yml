@@ -1,12 +1,18 @@
 - hosts: pulsarservers
   vars:
-    #miniconda_prefix: /home/pulsar/conda
+    # Golang
+    golang_gopath: '/opt/workspace-go'
+    # Singularity target version
+    singularity_version: "3.7.4"
+    singularity_go_path: "{{ golang_install_dir }}"
+    # (Mini)conda
+    #miniconda_prefix: /storage/brno11-elixir/home/galaxyelixir/pulsar-re/miniconda
     #miniconda_channels:
     #  - conda-forge
-    #  - anaconda
     #  - defaults
     #miniconda_base_env_packages:
     #  - mamba
+    #miniconda_install_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-re
   vars_files:
     - group_vars/secret.yml
   pre_tasks:
@@ -21,14 +27,17 @@
           - virtualenv
           - libgnutls28-dev
           - squashfs-tools # DEMON: needed by singularity roles
+          - libpbspro-dev
         state: present
         update_cache: yes
       become: yes
   roles:
     #- role: galaxyproject.cvmfs
     #  become: yes
-    - gantsign.golang
-    - cyverse-ansible.singularity
+    #- gantsign.golang
+    #- cyverse-ansible.singularity
     - galaxyproject.pulsar
     #- role: galaxyproject.miniconda
+    #- role: andrewrothstein.miniconda
     #  become: true
+    #  become_user: "{{ pulsar_user.name }}"

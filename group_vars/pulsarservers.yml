@@ -3,14 +3,13 @@ rabbitmq_hostname: "regalaxy.vm.cesnet.cz" # DEMON: Important to have proper FQD
 rabbitmq_vhost: "/pulsar_test" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
 rabbitmq_user: "galaxyelixir" # DEMON: must be user running connected Galaxy server
 rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
-## DEMON: alternative settings to connect to different Galaxy server
-#rabbitmq_hostname: "usegalaxy.cerit-sc.cz"
-#rabbitmq_vhost: "galaxy"
-#rabbitmq_user: "galaxy"
-#rabbitmq_port: 5671
 
 pulsar_root: /opt/pulsar
 pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-re
+pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
+pulsar_persistence_dir: "{{ pulsar_data_dir }}/files/persistent"
+pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
+pulsar_separate_privileges: true
 
 #miniconda_prefix: "/home/pulsar/conda_test"
 #miniconda_version: 4.7.12
@@ -23,9 +22,11 @@ pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-re
 #  dependencies:
 #    - mamba
 
-miniconda_prefix: "/storage/brno11-elixir/home/galaxyelixir/anaconda3"
+miniconda_prefix: "{{ pulsar_data_dir }}/conda"
+#miniconda_prefix: "/storage/brno11-elixir/home/galaxyelixir/anaconda3"
 conda_prefix: "{{ miniconda_prefix }}"
-conda_exec: "{{ conda_prefix }}/bin/mamba"
+conda_exec: "{{ conda_prefix }}/bin/conda"
+#conda_exec: "{{ conda_prefix }}/bin/mamba"
 conda_channels:
   - "conda-forge"
   - "bioconda"
@@ -44,13 +45,13 @@ pulsar_systemd_service_name: pulsar
 pulsar_systemd_state: started
 pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
-  # it would be better to download and configure pbs-drmma library always fresh in new ansible role
-  - DRMAA_LIBRARY_PATH="/storage/brno11-elixir/home/galaxyelixir/pbs-drmaa-1.0.19/pbs_drmaa/.libs/libdrmaa.so"
+  - DRMAA_LIBRARY_PATH="/opt/pbs-drmaa-1.0.19/pbs_drmaa/.libs/libdrmaa.so"
 
 pulsar_create_user: true
 pulsar_user:
   name: galaxyelixir
   shell: /bin/bash
+#pulsar_group: "{{ pulsar_user.name }}"
 
 pulsar_optional_dependencies:
   - pyOpenSSL
@@ -70,10 +71,9 @@ pulsar_optional_dependencies:
   #- poster3
 
 pulsar_yaml_config:
-  #jobs_directory: "/opt/pulsar/files/staging" # Most probably not needed and could be removed
-  staging_directory: "{{ pulsar_data_dir }}/files/staging"
-  persistence_directory: "{{ pulsar_data_dir }}/files/persistent"
-  tool_dependency_dir: "{{ pulsar_data_dir }}/deps"
+  staging_directory: "{{ pulsar_staging_dir }}"
+  persistence_directory: "{{ pulsar_persistence_dir }}"
+  tool_dependency_dir: "{{ pulsar_dependencies_dir }}"
   # The following are the settings for the pulsar server to contact the message queue with related timeouts etc.
   message_queue_url: "pyamqp://{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ rabbitmq_hostname }}:{{ rabbitmq_port }}/{{ rabbitmq_vhost }}?ssl=1"
   min_polling_interval: 0.5
@@ -88,7 +88,8 @@ pulsar_yaml_config:
   dependency_resolution:
     resolvers:
       - type: conda
-        auto_init: false
+        auto_init: true
+        #auto_init: false
         auto_install: true
         ensure_channels: "{{ conda_channels|join(',') }}"
         exec: "{{ conda_exec }}"
@@ -97,8 +98,8 @@ pulsar_yaml_config:
     _default_:
       type: queued_drmaa
       ### Better to let Galaxy decides about this in job_conf
-      #native_specification: "-l select=1:ncpus=1:mem=1gb:scratch_local=15gb -l walltime=01:00:00 -q elixirre@elixir-pbs.elixir-czech.cz"
+      #native_specification: "-l select=1:ncpus=1:mem=1gb:scratch_local=10gb -l walltime=01:00:00 -q elixirre@elixir-pbs.elixir-czech.cz"
 
 # Pulsar should use the same job metrics plugins as Galaxy. This will automatically set `job_metrics_config_file` in
 # `pulsar_yaml_config` and create `{{ pulsar_config_dir }}/job_metrics_conf.yml`.
-pulsar_job_metrics_plugins: "{{ galaxy_job_metrics_plugins }}"
+#pulsar_job_metrics_plugins: "{{ galaxy_job_metrics_plugins }}"

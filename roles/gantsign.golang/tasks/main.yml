@@ -27,12 +27,11 @@
   get_url:
     url: '{{ golang_mirror }}/{{ golang_redis_filename }}'
     dest: '{{ golang_download_dir }}/{{ golang_redis_filename }}'
-    checksum: 'sha256:{{ golang_redis_sha256sum }}'
+    sha256sum: '{{ golang_redis_sha256sum }}'
     force: no
     use_proxy: yes
     validate_certs: yes
     mode: 'u=rw,go=r'
-  when: not ansible_check_mode
 
 - name: create Go language SDK installation directory
   become: yes
@@ -50,7 +49,7 @@
       - gzip
       - tar
     state: present
-  when: ansible_pkg_mgr == 'zypper' and not ansible_check_mode
+  when: ansible_pkg_mgr == 'zypper'
 
 - name: install Go language SDK
   become: yes
@@ -62,7 +61,6 @@
     owner: root
     group: root
     creates: '{{ golang_install_dir }}/bin'
-  when: not ansible_check_mode
 
 # Set Go language SDK environment variables
 - name: make sure /etc/profile.d exists
@@ -101,7 +99,6 @@
     owner: root
     group: root
     mode: 'u=rw,go=r'
-  when: not ansible_check_mode
 
 - name: re-read facts
   setup:

@@ -10,7 +10,7 @@ Role to download and install the [Go language SDK](https://golang.org/).
 Requirements
 ------------
 
-* Ansible >= 2.9
+* Ansible >= 2.8
 
 * Linux Distribution
 
@@ -18,31 +18,30 @@ Requirements
 
         * Debian
 
+            * Jessie (8)
             * Stretch (9)
-            * Buster (10)
-            * Bullseye (11)
 
         * Ubuntu
 
             * Xenial (16.04)
             * Bionic (18.04)
-            * Focal (20.04)
 
     * RedHat Family
 
-        * Rocky Linux
+        * CentOS
 
+            * 7
             * 8
 
         * Fedora
 
-            * 35
+            * 31
 
     * SUSE Family
 
         * openSUSE
 
-            * 15.3
+            * 15.1
 
     * Note: other versions are likely to work but have not been tested.
 
@@ -54,7 +53,7 @@ are shown below):
 
 ```yaml
 # Go language SDK version number
-golang_version: '1.20.1'
+golang_version: '1.15.6'
 
 # Mirror to download the Go language SDK redistributable package from
 golang_mirror: 'https://storage.googleapis.com/golang'
@@ -75,65 +74,6 @@ The following versions of Go language SDK are supported without any additional
 configuration (for other versions follow the Advanced Configuration
 instructions):
 
-* `1.20.1`
-* `1.20`
-* `1.19.6`
-* `1.19.5`
-* `1.19.4`
-* `1.19.3`
-* `1.19.2`
-* `1.19.1`
-* `1.19`
-* `1.18.10`
-* `1.18.9`
-* `1.18.8`
-* `1.18.7`
-* `1.18.6`
-* `1.18.5`
-* `1.18.4`
-* `1.18.3`
-* `1.18.2`
-* `1.18.1`
-* `1.18`
-* `1.17.13`
-* `1.17.12`
-* `1.17.11`
-* `1.17.10`
-* `1.17.9`
-* `1.17.8`
-* `1.17.7`
-* `1.17.6`
-* `1.17.5`
-* `1.17.4`
-* `1.17.3`
-* `1.17.2`
-* `1.17.1`
-* `1.17`
-* `1.16.15`
-* `1.16.14`
-* `1.16.13`
-* `1.16.12`
-* `1.16.11`
-* `1.16.10`
-* `1.16.9`
-* `1.16.8`
-* `1.16.7`
-* `1.16.6`
-* `1.16.5`
-* `1.16.4`
-* `1.16.3`
-* `1.16.2`
-* `1.16.1`
-* `1.16`
-* `1.15.15`
-* `1.15.14`
-* `1.15.13`
-* `1.15.12`
-* `1.15.11`
-* `1.15.10`
-* `1.15.9`
-* `1.15.8`
-* `1.15.7`
 * `1.15.6`
 * `1.15.5`
 * `1.15.4`
@@ -141,8 +81,6 @@ instructions):
 * `1.15.2`
 * `1.15.1`
 * `1.15`
-* `1.14.15`
-* `1.14.14`
 * `1.14.13`
 * `1.14.12`
 * `1.14.11`
