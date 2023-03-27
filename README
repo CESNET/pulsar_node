@@ -3,8 +3,25 @@
 import poster3 as poster
 # koniec upravy
 
-# Nainstalovat ansible
-apt install ansible -y
+# Nainstalovat ansible a libpbspro-dev
+apt install ansible libpbspro-dev -y
+
+# nutna uprava suboru /etc/pbs.conf: zmena pbs serveru na server kde je pozadovana queue na submitovanie galaxy jobov 
+#PBS_SERVER=meta-pbs.metacentrum.cz
+PBS_SERVER=elixir-pbs.elixir-czech.cz
+
+# instalacia pbs-drmaa-1.0.19 z https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-1.0.19.tar.gz?viasf=1 (ako root)
+cd <pbs-drmaa dir> && ./configure && make && make install
+
+# ziskat kerberos kluc pre pulsar/galaxy uzivatela s pristupom na spravny storage a do spravnej PBS queue a pridat si nasledujuce riadky do crontab -e
+BASH_ENV=~/.bashrc
+SHELL=/bin/bash
+@reboot kinit -k -t /home/galaxyelixir/galaxyelixir.keytab galaxyelixir@META
+1 */6 * * * kinit -k -t /home/galaxyelixir/galaxyelixir.keytab galaxyelixir@META
+# kde galaxyelixir je moj pulsar/galaxy uzivatel
+
+# na spravnom ulozisku (pre mna storage/brno11-elixir/home/galaxyelixir) nainstalovat condu a do base env pridat mambu
+
 
 # Vytvorit kluc pre pristup do git repa a zaregistrovat kluc vo svojom profile na githube
 ssh-keygen -t ed25519
