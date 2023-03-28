@@ -1,7 +1,7 @@
 # Nainstalovat ansible a libpbspro-dev
 apt install ansible libpbspro-dev -y
 
-# nutna uprava suboru /etc/pbs.conf: zmena pbs serveru na server kde je pozadovana queue na submitovanie galaxy jobov 
+# INFO: bola nutna uprava suboru /etc/pbs.conf v puppetovi: zmena pbs serveru na server kde je pozadovana queue na submitovanie galaxy jobov 
 #PBS_SERVER=meta-pbs.metacentrum.cz
 PBS_SERVER=elixir-pbs.elixir-czech.cz
 
@@ -45,7 +45,7 @@ ansible-playbook pulsar.yml
 import poster3 as poster
 # koniec upravy
 
-## Bolo nutne zmenit obsah subora: roles/galaxyproject.pulsar/tasks/paths.yml (task Create Pulsar user-owned directories):
+## INFO: Bolo nutne zmenit obsah subora: roles/galaxyproject.pulsar/tasks/paths.yml (task Create Pulsar user-owned directories):
     - name: Create Pulsar user-owned directories
       file:
         path: "{{ item }}"
