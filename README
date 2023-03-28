@@ -21,7 +21,12 @@ SHELL=/bin/bash
 # kde galaxyelixir je moj pulsar/galaxy uzivatel
 
 # na spravnom ulozisku (pre mna storage/brno11-elixir/home/galaxyelixir) nainstalovat condu a do base env pridat mambu
-
+wget https://repo.anaconda.com/miniconda/Miniconda3-py39_23.1.0-1-Linux-x86_64.sh
+bash Miniconda3-py39_23.1.0-1-Linux-x86_64.sh
+# pocas instalacie je nutne zadat cestu na zdielany storage (pre galaxyelixir je to /storage/brno11-elixir/home/galaxyelixir/)
+# nie je nutne inicializovat condu, ale je nutne aktivovat env a nainstalovat mambu
+. <path to conda>/bin/activate
+conda install -c conda-forge mamba
 
 # Vytvorit kluc pre pristup do git repa a zaregistrovat kluc vo svojom profile na githube
 ssh-keygen -t ed25519
