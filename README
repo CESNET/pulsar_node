@@ -12,6 +12,8 @@ useradd -g 10145 -m -u 2469 -s /bin/bash galaxyelixir
 # instalacia pbs-drmaa-1.0.19 z https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-1.0.19.tar.gz?viasf=1 (ako pulsar/galaxy user)
 cd ~ && wget -O pbs-drmaa.tar.gz <pbs-drmaa link> && tar zxf pbs-drmaa.tar.gz
 cd <pbs-drmaa dir> && ./configure && make && make check
+# plus je nutne vytvorit zlozku .drmaa na prislusnom ulozisku (pre mna storage/brno11-elixir/home/galaxyelixir)
+mkdir -p  <galaxy home on shared storage>/.drmaa
 
 # ziskat kerberos kluc pre pulsar/galaxy uzivatela s pristupom na spravny storage a do spravnej PBS queue a pridat si nasledujuce riadky do crontab -e
 BASH_ENV=~/.bashrc
