@@ -31,9 +31,18 @@
         state: present
         update_cache: yes
       become: yes
+    - name: Mount NFS volume to share job data with worker nodes
+      ansible.posix.mount:
+        src: "storage-{{ item }}.metacentrum.cz:/"
+        path: "/auto/{{ item }}"
+        opts: "sec=krb5i,proto=tcp,port=2049,intr"
+        state: mounted
+        fstype: nfs4
+      become: yes
+      loop:
+         - brno11-elixir
+         - praha5-elixir
   roles:
-    #- role: galaxyproject.cvmfs
-    #  become: yes
     - gantsign.golang
     - cyverse-ansible.singularity
     - galaxyproject.pulsar
