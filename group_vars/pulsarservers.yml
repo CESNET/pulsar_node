@@ -1,10 +1,11 @@
 # Put your Galaxy server's fully qualified domain name (FQDN) (or the FQDN of the RabbitMQ server) above.
-rabbitmq_hostname: "regalaxy.vm.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
-rabbitmq_vhost: "/pulsar_test" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
-rabbitmq_user: "galaxyelixir" # DEMON: must be user running connected Galaxy server
+rabbitmq_hostname: "galaxy-re.grid.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
+rabbitmq_vhost: "/pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
+rabbitmq_user: "pulsar" # DEMON: must be user running connected Galaxy server
 rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 
 pulsar_root: /opt/pulsar
+pulsar_package_version: "0.15.3"
 pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-re
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
 pulsar_persistence_dir: "{{ pulsar_data_dir }}/files/persistent"
@@ -96,9 +97,23 @@ pulsar_yaml_config:
         prefix: "{{ conda_prefix }}"
   managers:
     _default_:
-      type: queued_drmaa
+      type: queued_cli
       ### Better to let Galaxy decides about this in job_conf
-      #native_specification: "-l select=1:ncpus=1:mem=1gb:scratch_local=10gb -l walltime=01:00:00 -q elixirre@elixir-pbs.elixir-czech.cz"
+      #native_specification: "-l select=1:ncpus=2:mem=8gb:scratch_local=50gb -l walltime=23:59:59 -q elixirre@elixir-pbs.elixir-czech.cz"
+      job_plugin: Torque
+      job_Resource_List: "select=1:ncpus=2:mem=8gb:pbs_server=elixir-pbs.elixir-czech.cz:scratch_local=50gb,walltime=24:00:00"
+      job_destination: "elixirre@elixir-pbs.elixir-czech.cz"
+      job_Wide_setup: "umask=022"
+    long_and_big:
+      type: queued_cli
+      job_plugin: Torque
+      job_Resource_List: "select=1:ncpus=16:mem=64gb:pbs_server=elixir-pbs.elixir-czech.cz:scratch_local=150gb,walltime=48:00:00"
+      job_destination: "elixirre@elixir-pbs.elixir-czech.cz"
+    gpu:
+      type: queued_cli
+      job_plugin: Torque
+      job_Resource_List: "select=1:ncpus=12:mem=120gb:pbs_server=meta-pbs.metacentrum.cz:scratch_local=100gb:ngpus=1:gpu_mem=8gb,walltime=12:00:00"
+      job_destination: "gpu@meta-pbs.metacentrum.cz"
 
 # Pulsar should use the same job metrics plugins as Galaxy. This will automatically set `job_metrics_config_file` in
 # `pulsar_yaml_config` and create `{{ pulsar_config_dir }}/job_metrics_conf.yml`.

@@ -1,12 +1,20 @@
 - hosts: pulsarservers
   vars:
+    # CVMFS vars
+    #cvmfs_role: client
+    #galaxy_cvmfs_repos_enabled: config-repo
+    #cvmfs_quota_limit: 5000
+
     # Golang
     golang_gopath: '/opt/workspace-go'
+
     # Singularity target version
     singularity_version: "3.7.4"
     singularity_go_path: "{{ golang_install_dir }}"
+
     # (Mini)conda
-    #miniconda_prefix: /storage/brno11-elixir/home/galaxyelixir/pulsar-re/miniconda
+    #miniconda_prefix: /storage/brno11-elixir/home/galaxyelixir/pulsar-re/conda
+    #miniconda_installer_shell: /bin/bash
     #miniconda_channels:
     #  - conda-forge
     #  - defaults
@@ -31,13 +39,22 @@
         state: present
         update_cache: yes
       become: yes
+    - name: Mount NFS volume to share job data with worker nodes
+      ansible.posix.mount:
+        src: "storage-{{ item }}.metacentrum.cz:/"
+        path: "/auto/{{ item }}"
+        opts: "sec=krb5i,proto=tcp,port=2049,intr"
+        state: mounted
+        fstype: nfs4
+      become: yes
+      loop:
+         - brno11-elixir
+         - praha5-elixir 
   roles:
-    #- role: galaxyproject.cvmfs
-    #  become: yes
     - gantsign.golang
     - cyverse-ansible.singularity
     - galaxyproject.pulsar
-    #- role: galaxyproject.miniconda
+#    - role: galaxyproject.miniconda
     #- role: andrewrothstein.miniconda
-    #  become: true
-    #  become_user: "{{ pulsar_user.name }}"
+#      become: true
+#      become_user: "{{ pulsar_user.name }}"
