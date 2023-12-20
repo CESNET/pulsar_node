@@ -22,6 +22,7 @@ ExecStart={{ pulsar_venv_dir }}/bin/uwsgi --ini-paste {{ pulsar_config_dir }}/se
 Environment={{ env }}
 {% endfor %}
 MemoryLimit={{ pulsar_systemd_memory_limit }}G
+LimitNOFILE={{ pulsar_systemd_nofile_limit }}
 Restart=always
 
 MemoryAccounting=yes
