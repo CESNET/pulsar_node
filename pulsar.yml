@@ -121,7 +121,7 @@
       become_user: "{{ galaxy_user.name }}"
     - name: Create .drmaa folder in NFS home
       ansible.builtin.shell:
-        cmd: "mkdir /auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/.drmaa"
+        cmd: "mkdir -p /auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/.drmaa"
       become: yes
       become_user: "{{ galaxy_user.name }}"
 
@@ -164,10 +164,18 @@
       become: yes
       become_user: "{{ galaxy_user.name }}"
 
+    - name: Create persistent files folder
+      ansible.builtin.file:
+        path: "{{ pulsar_persistence_dir }}"
+        state: directory
+        recurse: yes
+        mode: 'a+x'
+        owner: "{{ pulsar_user.name }}"
+
   roles:
     - gantsign.golang
     - cyverse-ansible.singularity
     - galaxyproject.pulsar
-    - role: galaxyproject.miniconda
-      become: true
-      become_user: "{{ pulsar_user.name }}"
+#    - role: galaxyproject.miniconda
+#      become: true
+#      become_user: "{{ pulsar_user.name }}"
