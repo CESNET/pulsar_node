@@ -18,7 +18,7 @@
     # Galaxy/Pulsar user setup
     galaxy_user:
       name: galaxyelixir
-      uid: 10145
+      uid:  2469
       shell: /bin/bash
       nfs_home: "brno11-elixir"
 
@@ -72,7 +72,7 @@
         create_home: "{{ galaxy_user.create_home | default('true') }}"
         home: "{{ galaxy_user.home | default(omit) }}"
         shell: "{{ galaxy_user.shell | default(omit) }}"
-        system: "{{ galaxy_user.system | default('true') }}"
+        system: "{{ galaxy_user.system | default('false') }}"
         local: "{{ galaxy_user.local | default(omit) }}"
 
     - name: Copy galaxy user's keytab from home at skirit to home here
@@ -122,6 +122,7 @@
       ansible.builtin.unarchive:
         src: "/home/{{ galaxy_user.name }}/pbs-drmaa.tar.gz"
         dest: "/home/{{ galaxy_user.name }}"
+#        remote_src: true
       become: yes
       become_user: "{{ galaxy_user.name }}"
     - name: Install pbs-drmaa library
