@@ -13,6 +13,11 @@ pulsar_persistence_dir: "{{ pulsar_root }}/files/persistent"
 pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
 pulsar_separate_privileges: true
 
+# CVMFS vars
+#cvmfs_role: client
+#galaxy_cvmfs_repos_enabled: config-repo
+#cvmfs_quota_limit: 500
+
 miniconda_prefix: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/conda"
 miniconda_version: 4.12.0
 miniconda_base_env_packages: ['mamba']
