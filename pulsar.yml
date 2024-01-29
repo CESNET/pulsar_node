@@ -1,10 +1,5 @@
 - hosts: pulsarservers
   vars:
-    # CVMFS vars
-    cvmfs_role: client
-    galaxy_cvmfs_repos_enabled: config-repo
-    cvmfs_quota_limit: 5000
-
     # Golang
     golang_gopath: '/opt/workspace-go'
 
@@ -129,7 +124,6 @@
       ansible.builtin.unarchive:
         src: "/home/{{ galaxy_user.name }}/pbs-drmaa.tar.gz"
         dest: "/home/{{ galaxy_user.name }}"
-#        remote_src: true
       become: yes
       become_user: "{{ galaxy_user.name }}"
     - name: Install pbs-drmaa library
@@ -138,8 +132,9 @@
       become: yes
       become_user: "{{ galaxy_user.name }}"
     - name: Create .drmaa folder in NFS home
-      ansible.builtin.shell:
-        cmd: "mkdir -p /auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/.drmaa"
+      ansible.builtin.file:
+        path: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/.drmaa"
+        state: directory
       become: yes
       become_user: "{{ galaxy_user.name }}"
 
@@ -203,7 +198,3 @@
     - gantsign.golang
     - cyverse-ansible.singularity
     - galaxyproject.pulsar
-    - galaxyproject.cvmfs
-#    - role: galaxyproject.miniconda
-#      become: true
-#      become_user: "{{ pulsar_user.name }}"
