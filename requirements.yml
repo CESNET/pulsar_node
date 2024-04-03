@@ -7,3 +7,6 @@
 #- src: galaxyproject.miniconda
 #  version: 0.3.1
 #- src: andrewrothstein.miniconda #napicu, zla dokumentacia, nefunkcne premenne
+# CVMFS Support
+#- src: galaxyproject.cvmfs
+#  version: 0.2.21

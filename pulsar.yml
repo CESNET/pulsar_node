@@ -65,11 +65,16 @@
         system: "{{ galaxy_user.system | default('true') }}"
         local: "{{ galaxy_user.local | default(omit) }}"
 
+    - name: Check if keytab exists
+      stat:
+        path: "/home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab"
+      register: keytab_exists
     - name: Copy galaxy user's keytab from home at skirit to home here
       ansible.builtin.shell:
         cmd: "scp {{ galaxy_user.name }}@skirit.metacentrum.cz:~/{{ galaxy_user.name }}.keytab /home/{{ galaxy_user.name }}/"
       become: yes
       become_user: "{{ galaxy_user.name }}"
+      when: not keytab_exists.stat.exists
 
     - name: Creates env var BASH_ENV in crontab
       ansible.builtin.cron:
@@ -137,6 +142,7 @@
         dest: "/home/{{ galaxy_user.name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh"
       become: yes
       become_user: "{{ galaxy_user.name }}"
+      when: not miniconda_exists.stat.exists
     - name: Install Miniconda to NFS home
       ansible.builtin.shell:
         cmd: "/bin/bash /home/{{ galaxy_user.name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh -b -p {{ miniconda_prefix }}"
@@ -151,10 +157,17 @@
         mode: 'a+x'
       become: yes
       become_user: "{{ galaxy_user.name }}"
+    - name: Check for mamba bin
+      stat:
+        path: "{{ miniconda_prefix }}/bin/mamba"
+      register: mamba_exists
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
     - name: Activate base env and install mamba
       ansible.builtin.command: "{{ miniconda_prefix }}/bin/conda install -y -c conda-forge mamba"
       become: yes
       become_user: "{{ galaxy_user.name }}"
+      when: not mamba_exists.stat.exists
     - name: Ensure conda folder is executable again
       ansible.builtin.file:
         path: "{{ miniconda_prefix }}/bin"
@@ -163,6 +176,7 @@
         mode: 'a+x'
       become: yes
       become_user: "{{ galaxy_user.name }}"
+      when: not mamba_exists.stat.exists
 
     - name: Create persistent files folder
       ansible.builtin.file:
@@ -176,6 +190,7 @@
     - gantsign.golang
     - cyverse-ansible.singularity
     - galaxyproject.pulsar
+#    - galaxyproject.cvmfs
 #    - role: galaxyproject.miniconda
 #      become: true
 #      become_user: "{{ pulsar_user.name }}"
