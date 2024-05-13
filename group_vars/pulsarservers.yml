@@ -6,10 +6,12 @@ rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 
 pulsar_root: /opt/pulsar
 pulsar_package_version: "0.15.3"
-pulsar_data_dir: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/pulsar-umsa"
+pulsar_network_homedir: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}"
+pulsar_data_dir: "{{ pulsar_network_homedir }}/pulsar-umsa"
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
 pulsar_persistence_dir: "{{ pulsar_root }}/files/persistent"
 pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
+pulsar_singularity_cachedir: "{{ pulsar_network_homedir }}/.singularity"
 pulsar_separate_privileges: true
 
 conda_prefix: "{{ miniconda_prefix }}"
@@ -70,10 +72,18 @@ pulsar_yaml_config:
   # for the tools we ask it to run. The simplest method which covers 99% of the use cases is to use conda auto installs
   # similar to how Galaxy works.
   dependency_resolution:
+    container_resolvers:
+      - type: cached_explicit_singularity
+        cache_directory: "{{ pulsar_singularity_cachedir }}"
+      - type: explicit_singularity
+        cache_directory: "{{ pulsar_singularity_cachedir }}"
+      - type: cached_mulled_singularity
+        cache_directory: "{{ pulsar_singularity_cachedir }}"
+      - type: mulled_singularity
+        cache_directory: "{{ pulsar_singularity_cachedir }}"
     resolvers:
       - type: conda
-        #auto_init: true
-        auto_init: false
+        auto_init: true
         auto_install: true
         ensure_channels: "{{ conda_channels|join(',') }}"
         exec: "{{ conda_exec }}"
