@@ -1,31 +1,22 @@
 # Put your Galaxy server's fully qualified domain name (FQDN) (or the FQDN of the RabbitMQ server) above.
-rabbitmq_hostname: "regalaxy.vm.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
-rabbitmq_vhost: "/pulsar_test" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
-rabbitmq_user: "galaxyelixir" # DEMON: must be user running connected Galaxy server
+rabbitmq_hostname: "usegalaxy.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
+rabbitmq_vhost: "pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
+rabbitmq_user: "pulsar" # DEMON: must be user running connected Galaxy server
 rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 
 pulsar_root: /opt/pulsar
-pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-re
+pulsar_package_version: "0.15.6"
+pulsar_network_homedir: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}"
+pulsar_data_dir: "{{ pulsar_network_homedir }}/pulsar-cz"
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
-pulsar_persistence_dir: "{{ pulsar_data_dir }}/files/persistent"
+pulsar_cleanup_dir: "{{ pulsar_data_dir }}/files/cleanup_jobs"
+pulsar_persistence_dir: "{{ pulsar_root }}/files/persistent"
 pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
+pulsar_singularity_cachedir: "{{ pulsar_network_homedir }}/.singularity"
 pulsar_separate_privileges: true
 
-#miniconda_prefix: "/home/pulsar/conda_test"
-#miniconda_version: 4.7.12
-#miniconda_base_env_packages: ['mamba']
-#miniconda_manage_dependencies: false
-#miniconda_env:
-#  name: root
-#  channels:
-#    - conda-forge
-#  dependencies:
-#    - mamba
-
-#miniconda_prefix: "{{ pulsar_data_dir }}/conda"
-miniconda_prefix: "/storage/brno11-elixir/home/galaxyelixir/anaconda3"
+#miniconda_prefix: "{{ pulsar_network_homedir }}/miniconda3"
 conda_prefix: "{{ miniconda_prefix }}"
-#conda_exec: "{{ conda_prefix }}/bin/conda"
 conda_exec: "{{ conda_prefix }}/bin/mamba"
 conda_channels:
   - "conda-forge"
@@ -33,7 +24,6 @@ conda_channels:
   - "iuc"
   - "r"
   - "anaconda"
-  - "petrnovak" # DEMON: channel needed for RepeatExplorer Galaxy (comment out otherwise)
   - "defaults"
 
 pulsar_pip_install: true
@@ -45,11 +35,12 @@ pulsar_systemd_service_name: pulsar
 pulsar_systemd_state: started
 pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
-  - DRMAA_LIBRARY_PATH="/home/galaxyelixir/pbs-drmaa-1.0.19/pbs_drmaa/.libs/libdrmaa.so"
+  - DRMAA_LIBRARY_PATH="/home/galaxyeu/pbs-drmaa-1.0.19/pbs_drmaa/.libs/libdrmaa.so"
+  - KRB5CCNAME="/tmp/krb5cc_{{ galaxy_user.name }}"
 
 pulsar_create_user: false
 pulsar_user:
-  name: galaxyelixir
+  name: galaxyeu
   shell: /bin/bash
 #pulsar_group: "{{ pulsar_user.name }}"
 
@@ -59,10 +50,12 @@ pulsar_optional_dependencies:
   - pycurl
   # drmaa required if connecting to an external DRM using it.
   - drmaa
-  # kombu needed if using a message queue
-  - kombu
-  # amqp 5.0.3 changes behaviour in an unexpected way, pin for now.
-  - 'amqp==5.0.2'
+#  # kombu needed if using a message queue
+#  - kombu
+#  # amqp 5.0.3 changes behaviour in an unexpected way, pin for now.
+#  - 'amqp==5.0.2'
+  - 'kombu==5.3.2'
+  - 'amqp==5.1.1'
   # psutil and pylockfile are optional dependencies but can make Pulsar
   # more robust in small ways.
   #- psutil
@@ -88,17 +81,36 @@ pulsar_yaml_config:
   dependency_resolution:
     resolvers:
       - type: conda
-        #auto_init: true
-        auto_init: false
+        auto_init: true
+#        auto_init: false
         auto_install: true
         ensure_channels: "{{ conda_channels|join(',') }}"
         exec: "{{ conda_exec }}"
         prefix: "{{ conda_prefix }}"
   managers:
     _default_:
+      type: queued_cli
+      job_plugin: Torque
+      job_Resource_List: "select=1:ncpus=8:mem=64gb:scratch_local=150gb,walltime=23:59:00"
+      job_destination: "galaxycz@pbs-m1.metacentrum.cz"
+      preprocess_action_max_retries: 10
+      preprocess_action_interval_start: 2
+      preprocess_action_interval_step: 2
+      preprocess_action_interval_max: 30
+      postprocess_action_max_retries: 10
+      postprocess_action_interval_start: 2
+      postprocess_action_interval_step: 2
+      postprocess_action_interval_max: 30
+    tpv:
       type: queued_drmaa
-      ### Better to let Galaxy decides about this in job_conf
-      #native_specification: "-l select=1:ncpus=1:mem=1gb:scratch_local=10gb -l walltime=01:00:00 -q elixirre@elixir-pbs.elixir-czech.cz"
+      preprocess_action_max_retries: 10
+      preprocess_action_interval_start: 2
+      preprocess_action_interval_step: 2
+      preprocess_action_interval_max: 30
+      postprocess_action_max_retries: 10
+      postprocess_action_interval_start: 2
+      postprocess_action_interval_step: 2
+      postprocess_action_interval_max: 30
 
 # Pulsar should use the same job metrics plugins as Galaxy. This will automatically set `job_metrics_config_file` in
 # `pulsar_yaml_config` and create `{{ pulsar_config_dir }}/job_metrics_conf.yml`.
