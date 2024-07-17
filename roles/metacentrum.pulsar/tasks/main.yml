@@ -1,0 +1,98 @@
+
+- name: Install required standard packages
+  package:
+    name:
+      - build-essential
+      - git
+      - gpg
+      - python3-dev
+      - libcurl4-openssl-dev
+      - libssl-dev
+      - virtualenv
+      - libgnutls28-dev
+      - squashfs-tools # DEMON: needed by singularity roles
+      - krb5-user
+      - nfs-common
+    state: present
+    update_cache: yes
+
+- name: Metacentrum repo key
+  apt_key:
+    url: https://repo.metacentrum.cz/key.asc
+    id: F11383F552848522E4EACA443573FD94A385CDB0
+  when: ansible_os_family == 'Debian'
+
+- name: Metacentrum repo
+  apt_repository:
+    repo: deb https://repo.metacentrum.cz/ bullseye main pilot	 # XXX: Debian 11
+    filename: meta_repo
+  when: ansible_os_family == 'Debian'
+
+- name: Install Metacentrum packages
+  package:
+    name:
+      - libpbspro-dev
+      - singularity-ce
+
+- name: KRB5 system keytab
+  copy:
+    content: "{{ krb5_nfs_keytab }}"
+    dest: /etc/krb5.keytab
+
+- name: KRB5 config
+  copy:
+    src: files/krb5.conf
+    dest: /etc/krb5.conf
+
+- name: NFS config
+  lineinfile:
+    path: /etc/default/nfs-common
+    regexp: '^{{ item }}'
+    line: '{{ item }}=yes'
+  loop:
+    - NEED_STATD
+    - NEED_IDMAPD
+    - NEED_GSSD
+  when: ansible_os_family == 'Debian'
+
+- name: start NFS
+  systemd_service:
+    name: nfs-client.target
+    enabled: true
+    state: started
+    masked: no
+
+- name: Mount NFS volume to share job data with worker nodes
+  ansible.posix.mount:
+    src: "storage-{{ item }}.metacentrum.cz:/"
+    path: "/storage/{{ item }}"
+    opts: "sec=krb5i,proto=tcp,port=2049"
+    state: mounted
+    fstype: nfs4
+  loop:
+     - brno11-elixir
+     - praha5-elixir
+
+- name: KRB5 user keytab
+  copy:
+    content: "{{ krb5_user_keytab }}"
+    dest: "/home/{{ pulsar_user.name }}/user.keytab"
+
+- name: KRB5 user ticket
+  command: "kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META"
+  become_user: '{{ pulsar_user.name }}'
+
+- name: KRB5 ticket renewal
+  cron:
+    name: krb5 ticket
+    minute: '1'
+    hour: '*/6'
+    job: 'kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META'
+    user: '{{ pulsar_user.name }}'
+
+- name: KRB5 ticket creation on reboot
+  cron:
+    name: krb5 ticket on reboot
+    special_time: reboot
+    job: 'kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META'
+    user: '{{ pulsar_user.name }}'

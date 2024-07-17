@@ -16,37 +16,33 @@
   vars_files:
     - group_vars/secret.yml
   pre_tasks:
-    - name: Install some packages
-      package:
-        name:
-          - build-essential
-          - git
-          - python3-dev
-          - libcurl4-openssl-dev
-          - libssl-dev
-          - virtualenv
-          - libgnutls28-dev
-          - squashfs-tools # DEMON: needed by singularity roles
-          - libpbspro-dev
-        state: present
-        update_cache: yes
+    - group:
+        name: "{{ pulsar_user.name }}"
+        gid: "{{ pulsar_user.gid }}"
       become: yes
-    - name: Mount NFS volume to share job data with worker nodes
-      ansible.posix.mount:
-        src: "storage-{{ item }}.metacentrum.cz:/"
-        path: "/auto/{{ item }}"
-        opts: "sec=krb5i,proto=tcp,port=2049,intr"
-        state: mounted
-        fstype: nfs4
+    - user:
+        name: "{{ pulsar_user.name }}"
+        uid: "{{ pulsar_user.uid }}"
+        group: "{{ pulsar_user.name }}"
+        shell: /bin/bash
       become: yes
-      loop:
-         - brno11-elixir
-         - praha5-elixir
+    - name: Create pulsar root
+      file:
+        path: "{{ pulsar_root }}"
+        state: directory
+        owner: "{{ pulsar_user.name }}"
+        group: "{{ pulsar_user.name }}"
+      become: yes
+        
   roles:
-    - gantsign.golang
-    - cyverse-ansible.singularity
-    - galaxyproject.pulsar
-    #- role: galaxyproject.miniconda
-    #- role: andrewrothstein.miniconda
-    #  become: true
-    #  become_user: "{{ pulsar_user.name }}"
+    - role: metacentrum.pulsar
+      become: yes
+#    - gantsign.golang
+#    - cyverse-ansible.singularity
+    - role: galaxyproject.pulsar
+      become: yes
+      become_user: "{{ pulsar_user.name }}"
+
+#- role: galaxyproject.miniconda
+#- role: andrewrothstein.miniconda
+

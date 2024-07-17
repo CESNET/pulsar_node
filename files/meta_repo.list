@@ -1,0 +1,7 @@
+#METACentrum repository incl. pilot section
+deb https://repo.metacentrum.cz/ all main pilot
+deb https://repo.metacentrum.cz/ bookworm main pilot
+
+deb-src https://repo.metacentrum.cz/ all main pilot
+deb-src https://repo.metacentrum.cz/ bookworm main pilot
+

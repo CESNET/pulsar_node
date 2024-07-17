@@ -1,11 +1,5 @@
-# Put your Galaxy server's fully qualified domain name (FQDN) (or the FQDN of the RabbitMQ server) above.
-rabbitmq_hostname: "regalaxy.vm.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
-rabbitmq_vhost: "/pulsar_test" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
-rabbitmq_user: "galaxyelixir" # DEMON: must be user running connected Galaxy server
-rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 
 pulsar_root: /opt/pulsar
-pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-re
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
 pulsar_persistence_dir: "{{ pulsar_data_dir }}/files/persistent"
 pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
@@ -45,12 +39,11 @@ pulsar_systemd_service_name: pulsar
 pulsar_systemd_state: started
 pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
-  - DRMAA_LIBRARY_PATH="/home/galaxyelixir/pbs-drmaa-1.0.19/pbs_drmaa/.libs/libdrmaa.so"
+#  - DRMAA_LIBRARY_PATH="/home/galaxyelixir/pbs-drmaa-1.0.19/pbs_drmaa/.libs/libdrmaa.so"
+  - DRMAA_LIBRARY_PATH="/opt/pbs-drmaa-1.0.19/pbs_drmaa/.libs/libdrmaa.so"
 
 pulsar_create_user: false
-pulsar_user:
-  name: galaxyelixir
-  shell: /bin/bash
+
 #pulsar_group: "{{ pulsar_user.name }}"
 
 pulsar_optional_dependencies:
@@ -103,3 +96,6 @@ pulsar_yaml_config:
 # Pulsar should use the same job metrics plugins as Galaxy. This will automatically set `job_metrics_config_file` in
 # `pulsar_yaml_config` and create `{{ pulsar_config_dir }}/job_metrics_conf.yml`.
 #pulsar_job_metrics_plugins: "{{ galaxy_job_metrics_plugins }}"
+
+
+pbs_server: pbs-m1.metacentrum.cz
