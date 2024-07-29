@@ -1,5 +1,5 @@
-rabbitmq_hostname: "regalaxy.vm.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
-rabbitmq_vhost: "/pulsar_test" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
+rabbitmq_hostname: "galaxy-gxit.grid.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
+rabbitmq_vhost: "pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
 rabbitmq_user: "pulsar" # DEMON: must be user running connected Galaxy server
 rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 

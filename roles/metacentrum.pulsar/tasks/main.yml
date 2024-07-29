@@ -31,8 +31,40 @@
 - name: Install Metacentrum packages
   package:
     name:
-      - libpbspro-dev
+      - openpbs-client
       - singularity-ce
+
+# conflict on /usr/lib/libpbsjson.so
+- name: Install PBS dev library
+  apt:
+    name:
+      - libopenpbs-dev
+    dpkg_options: "force-overwrite"
+
+- name: Download DRMAA
+  get_url:
+    url: https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-{{ drmaa_version }}.tar.gz?viasf=1
+    dest: /tmp/pbs-drmaa-{{ drmaa_version }}.tar.gz
+
+- name: Install DRMAA
+  shell: |
+    cd /tmp
+    rm -rf pbs-drmaa-{{ drmaa_version }}
+    tar xzf pbs-drmaa-{{ drmaa_version }}.tar.gz
+    cd pbs-drmaa-{{ drmaa_version }}
+    ./configure --prefix /opt/drmaa
+    make && make install
+
+- name: PBS config
+  lineinfile: 
+    path: /etc/pbs.conf
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+  loop:
+    - { key: 'PBS_SERVER', value: '{{ pbs_server }}' }
+    - { key: 'PBS_AUTH_METHOD', value: 'GSS' }
+    - { key: 'PBS_ENCRYPT_METHOD', value: 'GSS' }
+    - { key: 'PBS_SUPPORTED_AUTH_METHODS', value: 'GSS,resvport' }
 
 - name: KRB5 system keytab
   copy:
