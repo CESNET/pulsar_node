@@ -13,6 +13,11 @@
     #miniconda_base_env_packages:
     #  - mamba
     #miniconda_install_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-re
+    galaxy_user:
+      name: galaxyeu
+      uid: 5430
+      shell: /bin/bash
+      nfs_home: "praha5-elixir"
   vars_files:
     - group_vars/secret.yml
   pre_tasks:
@@ -27,10 +32,60 @@
           - virtualenv
           - libgnutls28-dev
           - squashfs-tools # DEMON: needed by singularity roles
-          - libpbspro-dev
+          - openpbs-client
+          - libopenpbs-dev
+          - tmpreaper
         state: present
         update_cache: yes
       become: yes
+    - name: Comment out SHOWWARNING line in tmpreaper config
+      ansible.builtin.lineinfile:
+        path: /etc/tmpreaper.conf
+        regexp: "SHOWWARNING="
+        state: absent
+
+    - name: Check if keytab exists
+      stat:
+        path: "/home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab"
+      register: keytab_exists
+    - name: Copy galaxy user's keytab from home at skirit to home here
+      ansible.builtin.shell:
+        cmd: "scp {{ galaxy_user.name }}@skirit.metacentrum.cz:~/{{ galaxy_user.name }}.keytab /home/{{ galaxy_user.name }}/"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+      when: not keytab_exists.stat.exists
+
+    - name: Creates env var BASH_ENV in crontab
+      ansible.builtin.cron:
+        name: BASH_ENV
+        env: yes
+        job: ~/.bashrc
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Creates env var SHELL in crontab
+      ansible.builtin.cron:
+        name: SHELL
+        env: yes
+        job: /bin/bash
+        insertafter: BASH_ENV
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Creates entry in crontab "@reboot kinit META"
+      ansible.builtin.cron:
+        name: "kinit <galaxy_user>@META after reboot"
+        special_time: reboot
+        job: "KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab {{ galaxy_user.name }}@META"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Creates entry in crontab "repeatedly kinit META"
+      ansible.builtin.cron:
+        name: "kinit <galaxy_user>@META repeatedly"
+        minute: 1
+        hour: "*/6"
+        job: "KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab {{ galaxy_user.name }}@META"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+
   roles:
     #- role: galaxyproject.cvmfs
     #  become: yes
