@@ -32,14 +32,15 @@
   package:
     name:
       - openpbs-client
+      - libopenpbs-dev
       - singularity-ce
 
 # conflict on /usr/lib/libpbsjson.so
-- name: Install PBS dev library
-  apt:
-    name:
-      - libopenpbs-dev
-    dpkg_options: "force-overwrite"
+#- name: Install PBS dev library
+#  apt:
+#    name:
+#      - libopenpbs-dev
+#    dpkg_options: "force-overwrite"
 
 - name: Download DRMAA
   get_url:
