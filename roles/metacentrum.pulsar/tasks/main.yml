@@ -1,3 +1,4 @@
+# TODO: resolve confict with puppet
 
 - name: Install required standard packages
   package:
@@ -13,6 +14,7 @@
       - squashfs-tools # DEMON: needed by singularity roles
       - krb5-user
       - nfs-common
+      - rsync
     state: present
     update_cache: yes
 
