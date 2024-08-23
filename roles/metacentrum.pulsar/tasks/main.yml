@@ -1,5 +1,3 @@
-# TODO: resolve confict with puppet
-
 - name: Install required standard packages
   package:
     name:
@@ -18,32 +16,6 @@
     state: present
     update_cache: yes
 
-- name: Metacentrum repo key
-  apt_key:
-    url: https://repo.metacentrum.cz/key.asc
-    id: F11383F552848522E4EACA443573FD94A385CDB0
-  when: ansible_os_family == 'Debian'
-
-- name: Metacentrum repo
-  apt_repository:
-    repo: deb https://repo.metacentrum.cz/ bullseye main pilot	 # XXX: Debian 11
-    filename: meta_repo
-  when: ansible_os_family == 'Debian'
-
-- name: Install Metacentrum packages
-  package:
-    name:
-      - openpbs-client
-      - libopenpbs-dev
-      - singularity-ce
-
-# conflict on /usr/lib/libpbsjson.so
-#- name: Install PBS dev library
-#  apt:
-#    name:
-#      - libopenpbs-dev
-#    dpkg_options: "force-overwrite"
-
 - name: Download DRMAA
   get_url:
     url: https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-{{ drmaa_version }}.tar.gz?viasf=1
@@ -57,56 +29,6 @@
     cd pbs-drmaa-{{ drmaa_version }}
     ./configure --prefix /opt/drmaa
     make && make install
-
-- name: PBS config
-  lineinfile: 
-    path: /etc/pbs.conf
-    regexp: "^{{ item.key }}="
-    line: "{{ item.key }}={{ item.value }}"
-  loop:
-    - { key: 'PBS_SERVER', value: '{{ pbs_server }}' }
-    - { key: 'PBS_AUTH_METHOD', value: 'GSS' }
-    - { key: 'PBS_ENCRYPT_METHOD', value: 'GSS' }
-    - { key: 'PBS_SUPPORTED_AUTH_METHODS', value: 'GSS,resvport' }
-
-- name: KRB5 system keytab
-  copy:
-    content: "{{ krb5_nfs_keytab }}"
-    dest: /etc/krb5.keytab
-
-- name: KRB5 config
-  copy:
-    src: files/krb5.conf
-    dest: /etc/krb5.conf
-
-- name: NFS config
-  lineinfile:
-    path: /etc/default/nfs-common
-    regexp: '^{{ item }}'
-    line: '{{ item }}=yes'
-  loop:
-    - NEED_STATD
-    - NEED_IDMAPD
-    - NEED_GSSD
-  when: ansible_os_family == 'Debian'
-
-- name: start NFS
-  systemd_service:
-    name: nfs-client.target
-    enabled: true
-    state: started
-    masked: no
-
-- name: Mount NFS volume to share job data with worker nodes
-  ansible.posix.mount:
-    src: "storage-{{ item }}.metacentrum.cz:/"
-    path: "/storage/{{ item }}"
-    opts: "sec=krb5i,proto=tcp,port=2049"
-    state: mounted
-    fstype: nfs4
-  loop:
-     - brno11-elixir
-     - praha5-elixir
 
 - name: KRB5 user keytab
   copy:

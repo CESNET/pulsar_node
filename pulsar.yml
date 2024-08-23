@@ -1,3 +1,8 @@
+- hosts: nometapuppet
+  roles:
+    - role: metacentrum.krbnfs
+      become: yes
+
 - hosts: pulsarservers
   vars:
     # Golang
