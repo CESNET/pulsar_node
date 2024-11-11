@@ -1,31 +1,20 @@
 # Put your Galaxy server's fully qualified domain name (FQDN) (or the FQDN of the RabbitMQ server) above.
-rabbitmq_hostname: "galaxy-re.grid.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
-rabbitmq_vhost: "/pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
-rabbitmq_user: "pulsar" # DEMON: must be user running connected Galaxy server
-#rabbitmq_user: "{{ galaxy_user.name }}" # DEMON: must be user running connected Galaxy server
+rabbitmq_hostname: "galaxy-umsa.grid.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
+rabbitmq_vhost: "pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
+rabbitmq_user: "{{ galaxy_user.name }}" # DEMON: must be user running connected Galaxy server
 rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 
 pulsar_root: /opt/pulsar
 pulsar_package_version: "0.15.6"
-pulsar_data_dir: "/storage/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/{{ pulsar_prefix }}"
+pulsar_network_homedir: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}"
+pulsar_data_dir: "{{ pulsar_network_homedir }}/{{ galaxy_user.pulsar_prefix }}"
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
+pulsar_cleanup_dir: "{{ pulsar_data_dir }}/files/cleanup_jobs"
+pulsar_cleanup_delay: "7d" # DEMON: pulsar-re needs this to have over 30d
 pulsar_persistence_dir: "{{ pulsar_root }}/files/persistent"
 pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
+pulsar_singularity_cachedir: "{{ pulsar_network_homedir }}/.singularity"
 pulsar_separate_privileges: true
-pulsar_cleanup_dir: "{{ pulsar_data_dir }}/files/cleanup_jobs"
-pulsar_cleanup_delay: "40d"
-
-conda_prefix: "{{ miniconda_prefix }}"
-conda_exec: "{{ conda_prefix }}/bin/mamba"
-conda_channels:
-  - "conda-forge"
-  - "bioconda"
-  - "iuc"
-  - "petrnovak"
-  - "r"
-  - "anaconda"
-  - "defaults"
-
 pulsar_pip_install: true
 pulsar_pycurl_ssl_library: openssl
 pulsar_systemd: true
@@ -37,13 +26,13 @@ pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
   - DRMAA_LIBRARY_PATH="/home/{{ galaxy_user.name }}/pbs-drmaa-{{ pbs_drmaa_version }}/pbs_drmaa/.libs/libdrmaa.so"
   - KRB5CCNAME="/tmp/krb5cc_{{ galaxy_user.name }}"
-pulsar_systemd_nofile_limit: 100000
+pulsar_systemd_nofile_limit: 100000 # DEMON: This settings is pulsar-re specific, but could be usefull in general
 
 pulsar_create_user: false
 pulsar_user:
   name: "{{ galaxy_user.name }}"
   shell: /bin/bash
-#pulsar_group: "{{ pulsar_user.name }}"
+  #pulsar_group: "{{ pulsar_user.name }}"
 
 pulsar_optional_dependencies:
   - pyOpenSSL
@@ -54,12 +43,7 @@ pulsar_optional_dependencies:
   # kombu needed if using a message queue
   - 'kombu==5.3.2'
   - 'amqp==5.1.1'
-  # DEMON: it used to be set for version 5.0.2 both kombu and amqp, but it seems that newer versions work too
-  # amqp 5.0.3 changes behaviour in an unexpected way, pin for now.
-  #- 'amqp==5.0.2'
-  #- 'kombu==5.0.2'
-  # psutil and pylockfile are optional dependencies but can make Pulsar
-  # more robust in small ways.
+  # psutil and pylockfile are optional dependencies but can make Pulsar more robust in small ways.
   - psutil
   - pylockfile
 
@@ -68,24 +52,36 @@ pulsar_yaml_config:
   persistence_directory: "{{ pulsar_persistence_dir }}"
   tool_dependency_dir: "{{ pulsar_dependencies_dir }}"
   # The following are the settings for the pulsar server to contact the message queue with related timeouts etc.
-  message_queue_url: "pyamqp://{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ rabbitmq_hostname }}:{{ rabbitmq_port }}/{{ rabbitmq_vhost }}?ssl=1"
-  min_polling_interval: 60.0
+  message_queue_url: "pyamqp://{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ rabbitmq_hostname }}:{{ rabbitmq_port }}/{{ rabbitmq_vhost }}?ssl=true"
+  min_polling_interval: 60
   amqp_publish_retry: True
   amqp_publish_retry_max_retries: 5
   amqp_publish_retry_interval_start: 10
   amqp_publish_retry_interval_step: 10
   amqp_publish_retry_interval_max: 60
-  # We also need to create the dependency resolvers configuration so pulsar knows how to find and install dependencies
-  # for the tools we ask it to run. The simplest method which covers 99% of the use cases is to use conda auto installs
-  # similar to how Galaxy works.
-  dependency_resolution:
-    resolvers:
-      - type: conda
-        auto_init: true
-        auto_install: true
-        ensure_channels: "{{ conda_channels|join(',') }}"
-        exec: "{{ conda_exec }}"
-        prefix: "{{ conda_prefix }}"
+  
+  ## DEMON: this setting is specific for RE Galaxy and pulsar-re cause usegalaxy.cz and galaxy-umsa depends only on singu;arity images
+  #
+  ## We also need to create the dependency resolvers configuration so pulsar knows how to find and install dependencies
+  ## for the tools we ask it to run. The simplest method which covers 99% of the use cases is to use conda auto installs
+  ## similar to how Galaxy works.
+  #dependency_resolution:
+  #  resolvers:
+  #    - type: conda
+  #      auto_init: true
+  #      auto_install: true
+  #      ensure_channels: "{{ conda_channels|join(',') }}"
+  #      exec: "{{ conda_exec }}"
+  #      prefix: "{{ conda_prefix }}"
+  container_resolvers:
+    -   type: explicit_singularity
+    -   cache_directory: /cvmfs/singularity.galaxyproject.org/all/
+        type: cached_mulled_singularity
+    -   auto_install: true
+        type: mulled_singularity
+    -   auto_install: false
+        cache_directory: /cvmfs/singularity.galaxyproject.org/all/
+        type: build_mulled_singularity
   managers:
     _default_:
       type: queued_drmaa

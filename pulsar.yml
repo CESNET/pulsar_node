@@ -1,26 +1,31 @@
 - hosts: pulsarservers
   vars:
-    # Golang
     golang_gopath: '/opt/workspace-go'
-
-    # Singularity target version
     singularity_version: "3.7.4"
     singularity_go_path: "{{ golang_install_dir }}"
-
-    # pbs-drmaa library version
     pbs_drmaa_version: "1.0.19"
 
     # Galaxy/Pulsar user setup
     galaxy_user:
-      name: galaxyelixir
-      uid:  2469
-      shell: /bin/bash
+## Specific settings for pulsar-re (needs to be moved into host_vars foder
+#      name: galaxyelixir
+#      uid:  2469
+#      nfs_home: "brno11-elixir"
+#      pulsar_prefix: pulsar-re
+## Specific settings for pulsar-cz (needs to be moved into host_vars foder
+#      name: galaxyeu
+#      uid: 5430
+#      nfs_home: "praha5-elixir"
+#      pulsar_prefix: pulsar-cz
+## Specific settings for pulsar-umsa (needs to be moved into host_vars foder
+      name: galaxyumsa
+      uid: 10456
       nfs_home: "brno11-elixir"
-
-    pulsar_prefix: pulsar-re
+      shell: /bin/bash
+      pulsar_prefix: pulsar-umsa
 
     # Miniconda settings
-    miniconda_prefix: "/storage/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/anaconda3"
+    miniconda_prefix: "{{ pulsar_network_homedir }}/conda"
     miniconda_version: 23.1.0
     miniconda_base_env_packages: ['mamba']
     miniconda_channels:
@@ -29,7 +34,7 @@
       - 'iuc'
       - 'r'
       - 'anaconda'
-      - 'petrnovak'
+      - 'petrnovak' # DEMON: this is pecific for RE Galaxy and pulsar-re but could be usefull also for usegalaxy.cz if using RE tools
       - 'defaults'
 
   vars_files:
@@ -205,12 +210,12 @@
     - gantsign.golang
     - cyverse-ansible.singularity
     - galaxyproject.pulsar
-
   post_tasks:
-#    - name: copy dependency_resolvers_config into pulsar config folder
-#      ansible.builtin.copy:
-#        src: dependency_resolvers_conf.xml  
-#        dest: "{{ pulsar_root }}/config/dependency_resolvers_conf.xml"
+    ## DEMON: This task might be necessary to comment ou for pulsar-re
+    - name: copy dependency_resolvers_config into pulsar config folder
+      ansible.builtin.copy:
+        src: dependency_resolvers_conf.xml
+        dest: "{{ pulsar_root }}/config/dependency_resolvers_conf.xml"
     - name: Create cleanup_jobs dir
       ansible.builtin.file:
         path: "{{ pulsar_cleanup_dir }}"
@@ -223,7 +228,7 @@
       ansible.builtin.cron:
         name: "tmpreaper in staging dir"
         minute: "7"
-        hour: "*/12" 
+        hour: "*/6" 
         job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 {{ pulsar_cleanup_delay }} {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
       become: yes
       become_user: "{{ galaxy_user.name }}"
