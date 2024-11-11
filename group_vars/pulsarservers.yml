@@ -6,12 +6,14 @@ rabbitmq_user: "pulsar" # DEMON: must be user running connected Galaxy server
 rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 
 pulsar_root: /opt/pulsar
-pulsar_package_version: "0.15.3"
-pulsar_data_dir: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/{{ pulsar_prefix }}"
+pulsar_package_version: "0.15.6"
+pulsar_data_dir: "/storage/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/{{ pulsar_prefix }}"
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
 pulsar_persistence_dir: "{{ pulsar_root }}/files/persistent"
 pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
 pulsar_separate_privileges: true
+pulsar_cleanup_dir: "{{ pulsar_data_dir }}/files/cleanup_jobs"
+pulsar_cleanup_delay: "40d"
 
 conda_prefix: "{{ miniconda_prefix }}"
 conda_exec: "{{ conda_prefix }}/bin/mamba"
@@ -34,6 +36,7 @@ pulsar_systemd_state: started
 pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
   - DRMAA_LIBRARY_PATH="/home/{{ galaxy_user.name }}/pbs-drmaa-{{ pbs_drmaa_version }}/pbs_drmaa/.libs/libdrmaa.so"
+  - KRB5CCNAME="/tmp/krb5cc_{{ galaxy_user.name }}"
 pulsar_systemd_nofile_limit: 100000
 
 pulsar_create_user: false
@@ -66,7 +69,7 @@ pulsar_yaml_config:
   tool_dependency_dir: "{{ pulsar_dependencies_dir }}"
   # The following are the settings for the pulsar server to contact the message queue with related timeouts etc.
   message_queue_url: "pyamqp://{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ rabbitmq_hostname }}:{{ rabbitmq_port }}/{{ rabbitmq_vhost }}?ssl=1"
-  min_polling_interval: 0.5
+  min_polling_interval: 60.0
   amqp_publish_retry: True
   amqp_publish_retry_max_retries: 5
   amqp_publish_retry_interval_start: 10
@@ -78,37 +81,13 @@ pulsar_yaml_config:
   dependency_resolution:
     resolvers:
       - type: conda
-        #auto_init: true
-        auto_init: false
+        auto_init: true
         auto_install: true
         ensure_channels: "{{ conda_channels|join(',') }}"
         exec: "{{ conda_exec }}"
         prefix: "{{ conda_prefix }}"
-#  container_resolvers: 
-#    - type: explicit_singularity
-#      cache_directory: "/storage/brno11-elixir/home/galaxyelixir/pulsar-re/singularity"
-#    - type: cached_mulled_singularity
-#      cache_directory: "/storage/brno11-elixir/home/galaxyelixir/pulsar-re/singularity"
-#    - type: mulled_singularity
-#      cache_directory: "/storage/brno11-elixir/home/galaxyelixir/pulsar-re/singularity"
   managers:
     _default_:
-      type: queued_cli
-      job_plugin: Torque
-      job_Resource_List: "select=1:ncpus=2:mem=8gb:pbs_server=elixir-pbs.elixir-czech.cz:scratch_local=50gb,walltime=24:00:00"
-      job_destination: "elixirre@elixir-pbs.elixir-czech.cz"
-      job_Wide_setup: "umask=022"
-    long_and_big:
-      type: queued_cli
-      job_plugin: Torque
-      job_Resource_List: "select=1:ncpus=16:mem=64gb:pbs_server=elixir-pbs.elixir-czech.cz:scratch_local=150gb,walltime=48:00:00"
-      job_destination: "elixirre@elixir-pbs.elixir-czech.cz"
-    gpu:
-      type: queued_cli
-      job_plugin: Torque
-      job_Resource_List: "select=1:ncpus=12:mem=120gb:pbs_server=meta-pbs.metacentrum.cz:scratch_local=100gb:ngpus=1:gpu_mem=8gb,walltime=12:00:00"
-      job_destination: "gpu@meta-pbs.metacentrum.cz"
-    test:
       type: queued_drmaa
       preprocess_action_max_retries: 10
       preprocess_action_interval_start: 2
@@ -118,8 +97,6 @@ pulsar_yaml_config:
       postprocess_action_interval_start: 2
       postprocess_action_interval_step: 2
       postprocess_action_interval_max: 30
-      ### Better to let Galaxy decides about this in job_conf
-      #native_specification: "-l select=1:ncpus=2:mem=8gb:scratch_local=50gb -l walltime=23:59:59 -q elixirre@elixir-pbs.elixir-czech.cz"
 
 # Pulsar should use the same job metrics plugins as Galaxy. This will automatically set `job_metrics_config_file` in
 # `pulsar_yaml_config` and create `{{ pulsar_config_dir }}/job_metrics_conf.yml`.
