@@ -14,17 +14,6 @@ pulsar_persistence_dir: "{{ pulsar_root }}/files/persistent"
 pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
 pulsar_singularity_cachedir: "{{ pulsar_network_homedir }}/.singularity"
 pulsar_separate_privileges: true
-
-conda_prefix: "{{ miniconda_prefix }}"
-conda_exec: "{{ conda_prefix }}/bin/mamba"
-conda_channels:
-  - "conda-forge"
-  - "bioconda"
-  - "iuc"
-  - "r"
-  - "anaconda"
-  - "defaults"
-
 pulsar_pip_install: true
 pulsar_pycurl_ssl_library: openssl
 pulsar_systemd: true
@@ -41,7 +30,7 @@ pulsar_create_user: false
 pulsar_user:
   name: "{{ galaxy_user.name }}"
   shell: /bin/bash
-#pulsar_group: "{{ pulsar_user.name }}"
+  #pulsar_group: "{{ pulsar_user.name }}"
 
 pulsar_optional_dependencies:
   - pyOpenSSL
@@ -51,10 +40,8 @@ pulsar_optional_dependencies:
   - drmaa
   # kombu needed if using a message queue
   - 'kombu==5.3.2'
-  # amqp 5.0.3 changes behaviour in an unexpected way, pin for now.
   - 'amqp==5.1.1'
-  # psutil and pylockfile are optional dependencies but can make Pulsar
-  # more robust in small ways.
+  # psutil and pylockfile are optional dependencies but can make Pulsar more robust in small ways.
   - psutil
   - pylockfile
 
@@ -70,9 +57,6 @@ pulsar_yaml_config:
   amqp_publish_retry_interval_start: 10
   amqp_publish_retry_interval_step: 10
   amqp_publish_retry_interval_max: 60
-  # We also need to create the dependency resolvers configuration so pulsar knows how to find and install dependencies
-  # for the tools we ask it to run. The simplest method which covers 99% of the use cases is to use conda auto installs
-  # similar to how Galaxy works.
   container_resolvers:
     -   type: explicit_singularity
     -   cache_directory: /cvmfs/singularity.galaxyproject.org/all/
@@ -82,14 +66,6 @@ pulsar_yaml_config:
     -   auto_install: false
         cache_directory: /cvmfs/singularity.galaxyproject.org/all/
         type: build_mulled_singularity
-#  dependency_resolution:
-#    resolvers:
-#    -   type: conda
-#        auto_init: true
-#        auto_install: false
-#        ensure_channels: "{{ conda_channels|join(',') }}"
-#        exec: "{{ conda_exec }}"
-#        prefix: "{{ conda_prefix }}"
   managers:
     _default_:
       type: queued_drmaa
