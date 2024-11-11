@@ -112,6 +112,10 @@
     #  become: true
     #  become_user: "{{ pulsar_user.name }}"
   post_tasks:
+    - name: copy dependency_resolvers_config into pulsar config folder
+      ansible.builtin.copy:
+        src: dependency_resolvers_conf.xml  
+        dest: "{{ pulsar_root }}/config/dependency_resolvers_conf.xml"
     - name: Create cleanup_jobs dir
       ansible.builtin.file:
         path: "{{ pulsar_cleanup_dir }}"
@@ -125,6 +129,6 @@
         name: "tmpreaper in staging dir"
         minute: "7"
         hour: "*" 
-        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 7d {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
+        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 3d {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
       become: yes
       become_user: "{{ galaxy_user.name }}"
