@@ -5,14 +5,26 @@
     # Singularity target version
     singularity_version: "3.7.4"
     singularity_go_path: "{{ golang_install_dir }}"
-    # (Mini)conda
-    #miniconda_prefix: /storage/brno11-elixir/home/galaxyelixir/pulsar-re/miniconda
-    #miniconda_channels:
-    #  - conda-forge
-    #  - defaults
-    #miniconda_base_env_packages:
-    #  - mamba
-    #miniconda_install_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-re
+    # pbs-drmaa library version
+    pbs_drmaa_version: "1.0.19"
+    # Galaxy/Pulsar user setup
+    galaxy_user:
+      name: galaxyeu
+      uid: 5430
+      shell: /bin/bash
+      nfs_home: "praha5-elixir"
+    # Miniconda settings
+    miniconda_prefix: "{{ pulsar_network_homedir }}/miniconda3"
+    miniconda_version: 23.1.0
+    miniconda_base_env_packages: ['mamba']
+    miniconda_channels:
+      - 'conda-forge'
+      - 'bioconda'
+      - 'iuc'
+      - 'r'
+      - 'anaconda'
+#      - 'petrnovak'
+      - 'defaults'
   vars_files:
     - group_vars/secret.yml
   pre_tasks:
@@ -27,10 +39,60 @@
           - virtualenv
           - libgnutls28-dev
           - squashfs-tools # DEMON: needed by singularity roles
-          - libpbspro-dev
+          - openpbs-client
+          - libopenpbs-dev
+          - tmpreaper
         state: present
         update_cache: yes
       become: yes
+    - name: Comment out SHOWWARNING line in tmpreaper config
+      ansible.builtin.lineinfile:
+        path: /etc/tmpreaper.conf
+        regexp: "SHOWWARNING="
+        state: absent
+
+    - name: Check if keytab exists
+      stat:
+        path: "/home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab"
+      register: keytab_exists
+    - name: Copy galaxy user's keytab from home at skirit to home here
+      ansible.builtin.shell:
+        cmd: "scp {{ galaxy_user.name }}@skirit.metacentrum.cz:~/{{ galaxy_user.name }}.keytab /home/{{ galaxy_user.name }}/"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+      when: not keytab_exists.stat.exists
+
+    - name: Creates env var BASH_ENV in crontab
+      ansible.builtin.cron:
+        name: BASH_ENV
+        env: yes
+        job: ~/.bashrc
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Creates env var SHELL in crontab
+      ansible.builtin.cron:
+        name: SHELL
+        env: yes
+        job: /bin/bash
+        insertafter: BASH_ENV
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Creates entry in crontab "@reboot kinit META"
+      ansible.builtin.cron:
+        name: "kinit <galaxy_user>@META after reboot"
+        special_time: reboot
+        job: "KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab {{ galaxy_user.name }}@META"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Creates entry in crontab "repeatedly kinit META"
+      ansible.builtin.cron:
+        name: "kinit <galaxy_user>@META repeatedly"
+        minute: 1
+        hour: "*/6"
+        job: "KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab {{ galaxy_user.name }}@META"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+
     - name: Mount NFS volume to share job data with worker nodes
       ansible.posix.mount:
         src: "storage-{{ item }}.metacentrum.cz:/"
@@ -42,6 +104,7 @@
       loop:
          - brno11-elixir
          - praha5-elixir
+
   roles:
     - gantsign.golang
     - cyverse-ansible.singularity
@@ -50,3 +113,24 @@
     #- role: andrewrothstein.miniconda
     #  become: true
     #  become_user: "{{ pulsar_user.name }}"
+  post_tasks:
+    - name: copy dependency_resolvers_config into pulsar config folder
+      ansible.builtin.copy:
+        src: dependency_resolvers_conf.xml  
+        dest: "{{ pulsar_root }}/config/dependency_resolvers_conf.xml"
+    - name: Create cleanup_jobs dir
+      ansible.builtin.file:
+        path: "{{ pulsar_cleanup_dir }}"
+        state: directory
+        recurse: yes
+        mode: 'a+x'
+      become: yes
+      become_user: "{{ galaxy_user.name }}"      
+    - name: Creates entry in crontab "tmpreaper call in staging dir"
+      ansible.builtin.cron:
+        name: "tmpreaper in staging dir"
+        minute: "7"
+        hour: "*" 
+        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 3d {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
