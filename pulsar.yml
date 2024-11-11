@@ -4,18 +4,26 @@
     singularity_version: "3.7.4"
     singularity_go_path: "{{ golang_install_dir }}"
     pbs_drmaa_version: "1.0.19"
+
     # Galaxy/Pulsar user setup
     galaxy_user:
+## Specific settings for pulsar-re (needs to be moved into host_vars foder
+#      name: galaxyelixir
+#      uid:  2469
+#      nfs_home: "brno11-elixir"
+#      pulsar_prefix: pulsar-re
 ## Specific settings for pulsar-cz (needs to be moved into host_vars foder
 #      name: galaxyeu
 #      uid: 5430
-#      shell: /bin/bash
 #      nfs_home: "praha5-elixir"
-#    miniconda_prefix: "{{ pulsar_network_homedir }}/miniconda3"
+#      pulsar_prefix: pulsar-cz
+## Specific settings for pulsar-umsa (needs to be moved into host_vars foder
       name: galaxyumsa
       uid: 10456
-      shell: /bin/bash
       nfs_home: "brno11-elixir"
+      shell: /bin/bash
+      pulsar_prefix: pulsar-umsa
+
     # Miniconda settings
     miniconda_prefix: "{{ pulsar_network_homedir }}/conda"
     miniconda_version: 23.1.0
@@ -26,8 +34,9 @@
       - 'iuc'
       - 'r'
       - 'anaconda'
-      - 'petrnovak'
+      - 'petrnovak' # DEMON: this is pecific for RE Galaxy and pulsar-re but could be usefull also for usegalaxy.cz if using RE tools
       - 'defaults'
+
   vars_files:
     - group_vars/secret.yml
   pre_tasks:
@@ -57,7 +66,7 @@
     - name: Mount NFS volume to share job data with worker nodes
       ansible.posix.mount:
         src: "storage-{{ galaxy_user.nfs_home }}.metacentrum.cz:/"
-        path: "/auto/{{ galaxy_user.nfs_home }}"
+        path: "/storage/{{ galaxy_user.nfs_home }}"
         opts: "sec=krb5i,proto=tcp,port=2049,intr"
         state: mounted
         fstype: nfs4
@@ -72,7 +81,7 @@
         create_home: "{{ galaxy_user.create_home | default('true') }}"
         home: "{{ galaxy_user.home | default(omit) }}"
         shell: "{{ galaxy_user.shell | default(omit) }}"
-        system: "{{ galaxy_user.system | default('true') }}"
+        system: "{{ galaxy_user.system | default('false') }}"
         local: "{{ galaxy_user.local | default(omit) }}"
 
     - name: Check if keytab exists
@@ -135,8 +144,9 @@
       become: yes
       become_user: "{{ galaxy_user.name }}"
     - name: Create .drmaa folder in NFS home
-      ansible.builtin.shell:
-        cmd: "mkdir -p /auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/.drmaa"
+      ansible.builtin.file:
+        path: "/storage/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/.drmaa"
+        state: directory
       become: yes
       become_user: "{{ galaxy_user.name }}"
 
@@ -200,8 +210,8 @@
     - gantsign.golang
     - cyverse-ansible.singularity
     - galaxyproject.pulsar
-#    - galaxyproject.cvmfs
   post_tasks:
+    ## DEMON: This task might be necessary to comment ou for pulsar-re
     - name: copy dependency_resolvers_config into pulsar config folder
       ansible.builtin.copy:
         src: dependency_resolvers_conf.xml
@@ -218,7 +228,7 @@
       ansible.builtin.cron:
         name: "tmpreaper in staging dir"
         minute: "7"
-        hour: "*" 
-        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 7d {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
+        hour: "*/6" 
+        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 {{ pulsar_cleanup_delay }} {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
       become: yes
       become_user: "{{ galaxy_user.name }}"

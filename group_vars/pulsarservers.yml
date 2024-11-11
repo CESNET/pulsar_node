@@ -7,9 +7,10 @@ rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 pulsar_root: /opt/pulsar
 pulsar_package_version: "0.15.6"
 pulsar_network_homedir: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}"
-pulsar_data_dir: "{{ pulsar_network_homedir }}/pulsar-umsa"
+pulsar_data_dir: "{{ pulsar_network_homedir }}/{{ galaxy_user.pulsar_prefix }}"
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
 pulsar_cleanup_dir: "{{ pulsar_data_dir }}/files/cleanup_jobs"
+pulsar_cleanup_delay: "7d" # DEMON: pulsar-re needs this to have over 30d
 pulsar_persistence_dir: "{{ pulsar_root }}/files/persistent"
 pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
 pulsar_singularity_cachedir: "{{ pulsar_network_homedir }}/.singularity"
@@ -25,6 +26,7 @@ pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
   - DRMAA_LIBRARY_PATH="/home/{{ galaxy_user.name }}/pbs-drmaa-{{ pbs_drmaa_version }}/pbs_drmaa/.libs/libdrmaa.so"
   - KRB5CCNAME="/tmp/krb5cc_{{ galaxy_user.name }}"
+pulsar_systemd_nofile_limit: 100000 # DEMON: This settings is pulsar-re specific, but could be usefull in general
 
 pulsar_create_user: false
 pulsar_user:
@@ -57,6 +59,20 @@ pulsar_yaml_config:
   amqp_publish_retry_interval_start: 10
   amqp_publish_retry_interval_step: 10
   amqp_publish_retry_interval_max: 60
+  
+  ## DEMON: this setting is specific for RE Galaxy and pulsar-re cause usegalaxy.cz and galaxy-umsa depends only on singu;arity images
+  #
+  ## We also need to create the dependency resolvers configuration so pulsar knows how to find and install dependencies
+  ## for the tools we ask it to run. The simplest method which covers 99% of the use cases is to use conda auto installs
+  ## similar to how Galaxy works.
+  #dependency_resolution:
+  #  resolvers:
+  #    - type: conda
+  #      auto_init: true
+  #      auto_install: true
+  #      ensure_channels: "{{ conda_channels|join(',') }}"
+  #      exec: "{{ conda_exec }}"
+  #      prefix: "{{ conda_prefix }}"
   container_resolvers:
     -   type: explicit_singularity
     -   cache_directory: /cvmfs/singularity.galaxyproject.org/all/
