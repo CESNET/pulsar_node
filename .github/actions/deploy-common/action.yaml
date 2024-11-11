@@ -11,7 +11,7 @@ runs:
         mkdir -p $HOME/.ssh
         install -m 600 -D /dev/null $HOME/.ssh/id_rsa
         echo "$SSH_PRIVATE_KEY" > $HOME/.ssh/id_rsa
-        ssh -f -o StrictHostKeyChecking=no $TARGET_USER@$TARGET_HOSTNAME hostname
+        ssh -f -o StrictHostKeyChecking=no "$TARGET_USER@$TARGET_HOSTNAME" hostname
 
 #    - name: Install Ansible requirements
 #      shell: bash
@@ -23,4 +23,4 @@ runs:
 
     - name: Run playbook
       shell: bash
-      run: ansible-playbook --limit $TARGET_HOSTNAME pulsar.yml
+      run: ansible-playbook --limit "$TARGET_HOSTNAME" pulsar.yml
