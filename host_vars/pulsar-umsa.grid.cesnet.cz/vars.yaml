@@ -1,0 +1,34 @@
+# Galaxy/Pulsar user setup
+galaxy_user:
+## Specific settings for pulsar-re (needs to be moved into host_vars foder
+#  name: galaxyelixir
+#  uid:  2469
+#  gid: 10145
+#  nfs_home: "brno11-elixir"
+#  pulsar_prefix: pulsar-re
+## Specific settings for pulsar-cz (needs to be moved into host_vars foder
+#  name: galaxyeu
+#  uid: 5430
+#  gid:
+#  nfs_home: "praha5-elixir"
+#  pulsar_prefix: pulsar-cz
+## Specific settings for pulsar-umsa (needs to be moved into host_vars foder
+  name: galaxyumsa
+  uid: 10456
+  gid: 
+  nfs_home: "brno11-elixir"
+  shell: /bin/bash
+  pulsar_prefix: pulsar-umsa
+
+pulsar_user:
+  name: pulsar
+  uid: 
+  gid: 
+  shell: /bin/bash
+  group: pulsar
+
+# Put your Galaxy server's fully qualified domain name (FQDN) (or the FQDN of the RabbitMQ server) above.
+rabbitmq_hostname: "galaxy-umsa.grid.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
+rabbitmq_vhost: "pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
+rabbitmq_user: "{{ galaxy_user.name }}" # DEMON: must be user running connected Galaxy server
+rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server

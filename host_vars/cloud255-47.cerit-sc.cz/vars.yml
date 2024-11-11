@@ -12,4 +12,5 @@ pulsar_user:
   uid: 2469
   gid: 10145
   shell: /bin/bash
+  group: galaxyelixir
 

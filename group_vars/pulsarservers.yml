@@ -1,35 +1,14 @@
-
 pulsar_root: /opt/pulsar
+pulsar_package_version: "0.15.6"
+pulsar_network_homedir: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}"
+pulsar_data_dir: "{{ pulsar_network_homedir }}/{{ galaxy_user.pulsar_prefix }}"
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
-pulsar_persistence_dir: "{{ pulsar_data_dir }}/files/persistent"
+pulsar_cleanup_dir: "{{ pulsar_data_dir }}/files/cleanup_jobs"
+pulsar_cleanup_delay: "7d" # DEMON: pulsar-re needs this to have over 30d
+pulsar_persistence_dir: "{{ pulsar_root }}/files/persistent"
 pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
+pulsar_singularity_cachedir: "{{ pulsar_network_homedir }}/.singularity"
 pulsar_separate_privileges: true
-
-#miniconda_prefix: "/home/pulsar/conda_test"
-#miniconda_version: 4.7.12
-#miniconda_base_env_packages: ['mamba']
-#miniconda_manage_dependencies: false
-#miniconda_env:
-#  name: root
-#  channels:
-#    - conda-forge
-#  dependencies:
-#    - mamba
-
-#miniconda_prefix: "{{ pulsar_data_dir }}/conda"
-miniconda_prefix: "/storage/brno11-elixir/home/galaxyelixir/anaconda3"
-conda_prefix: "{{ miniconda_prefix }}"
-#conda_exec: "{{ conda_prefix }}/bin/conda"
-conda_exec: "{{ conda_prefix }}/bin/mamba"
-conda_channels:
-  - "conda-forge"
-  - "bioconda"
-  - "iuc"
-  - "r"
-  - "anaconda"
-  - "petrnovak" # DEMON: channel needed for RepeatExplorer Galaxy (comment out otherwise)
-  - "defaults"
-
 pulsar_pip_install: true
 pulsar_pycurl_ssl_library: openssl
 pulsar_systemd: true
@@ -39,14 +18,19 @@ pulsar_systemd_service_name: pulsar
 pulsar_systemd_state: started
 pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
-#  - DRMAA_LIBRARY_PATH="/home/galaxyelixir/pbs-drmaa-1.0.19/pbs_drmaa/.libs/libdrmaa.so"
+#  - DRMAA_LIBRARY_PATH="/home/{{ galaxy_user.name }}/pbs-drmaa-{{ pbs_drmaa_version }}/pbs_drmaa/.libs/libdrmaa.so"
   - DRMAA_LIBRARY_PATH="/opt/drmaa/lib/libdrmaa.so"
+  - KRB5CCNAME="/tmp/krb5cc_{{ pulsar_user.name }}"
+pulsar_systemd_nofile_limit: 100000 # DEMON: This settings is pulsar-re specific, but could be usefull in general
 
 drmaa_version: 1.0.19
+pbs_server: pbs-m1.metacentrum.cz
 
 pulsar_create_user: false
-
-#pulsar_group: "{{ pulsar_user.name }}"
+#pulsar_user:
+#  name: "{{ galaxy_user.name }}"
+#  shell: /bin/bash
+#  #pulsar_group: "{{ pulsar_user.name }}"
 
 pulsar_optional_dependencies:
   - pyOpenSSL
@@ -55,49 +39,59 @@ pulsar_optional_dependencies:
   # drmaa required if connecting to an external DRM using it.
   - drmaa
   # kombu needed if using a message queue
-  - kombu
-  # amqp 5.0.3 changes behaviour in an unexpected way, pin for now.
-  - 'amqp==5.0.2'
-  # psutil and pylockfile are optional dependencies but can make Pulsar
-  # more robust in small ways.
-  #- psutil
-  #- pylockfile
-  # DEMON: Not sure if this is really needed as we found out, that neither poster (for python 2.7) nor poster3 works
-  #- poster3
+  - 'kombu==5.3.2'
+  - 'amqp==5.1.1'
+  # psutil and pylockfile are optional dependencies but can make Pulsar more robust in small ways.
+  - psutil
+  - pylockfile
 
 pulsar_yaml_config:
   staging_directory: "{{ pulsar_staging_dir }}"
   persistence_directory: "{{ pulsar_persistence_dir }}"
   tool_dependency_dir: "{{ pulsar_dependencies_dir }}"
   # The following are the settings for the pulsar server to contact the message queue with related timeouts etc.
-  message_queue_url: "pyamqp://{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ rabbitmq_hostname }}:{{ rabbitmq_port }}/{{ rabbitmq_vhost }}?ssl=1"
-  min_polling_interval: 0.5
+  message_queue_url: "pyamqp://{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ rabbitmq_hostname }}:{{ rabbitmq_port }}/{{ rabbitmq_vhost }}?ssl=true"
+  min_polling_interval: 60
   amqp_publish_retry: True
   amqp_publish_retry_max_retries: 5
   amqp_publish_retry_interval_start: 10
   amqp_publish_retry_interval_step: 10
   amqp_publish_retry_interval_max: 60
-  # We also need to create the dependency resolvers configuration so pulsar knows how to find and install dependencies
-  # for the tools we ask it to run. The simplest method which covers 99% of the use cases is to use conda auto installs
-  # similar to how Galaxy works.
-  dependency_resolution:
-    resolvers:
-      - type: conda
-        #auto_init: true
-        auto_init: false
-        auto_install: true
-        ensure_channels: "{{ conda_channels|join(',') }}"
-        exec: "{{ conda_exec }}"
-        prefix: "{{ conda_prefix }}"
+  
+  ## DEMON: this setting is specific for RE Galaxy and pulsar-re cause usegalaxy.cz and galaxy-umsa depends only on singu;arity images
+  #
+  ## We also need to create the dependency resolvers configuration so pulsar knows how to find and install dependencies
+  ## for the tools we ask it to run. The simplest method which covers 99% of the use cases is to use conda auto installs
+  ## similar to how Galaxy works.
+  #dependency_resolution:
+  #  resolvers:
+  #    - type: conda
+  #      auto_init: true
+  #      auto_install: true
+  #      ensure_channels: "{{ conda_channels|join(',') }}"
+  #      exec: "{{ conda_exec }}"
+  #      prefix: "{{ conda_prefix }}"
+  container_resolvers:
+    -   type: explicit_singularity
+    -   cache_directory: /cvmfs/singularity.galaxyproject.org/all/
+        type: cached_mulled_singularity
+    -   auto_install: true
+        type: mulled_singularity
+    -   auto_install: false
+        cache_directory: /cvmfs/singularity.galaxyproject.org/all/
+        type: build_mulled_singularity
   managers:
     _default_:
       type: queued_drmaa
-      ### Better to let Galaxy decides about this in job_conf
-      #native_specification: "-l select=1:ncpus=1:mem=1gb:scratch_local=10gb -l walltime=01:00:00 -q elixirre@elixir-pbs.elixir-czech.cz"
+      preprocess_action_max_retries: 10
+      preprocess_action_interval_start: 2
+      preprocess_action_interval_step: 2
+      preprocess_action_interval_max: 30
+      postprocess_action_max_retries: 10
+      postprocess_action_interval_start: 2
+      postprocess_action_interval_step: 2
+      postprocess_action_interval_max: 30
 
 # Pulsar should use the same job metrics plugins as Galaxy. This will automatically set `job_metrics_config_file` in
 # `pulsar_yaml_config` and create `{{ pulsar_config_dir }}/job_metrics_conf.yml`.
 #pulsar_job_metrics_plugins: "{{ galaxy_job_metrics_plugins }}"
-
-
-pbs_server: pbs-m1.metacentrum.cz

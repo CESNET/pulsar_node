@@ -13,8 +13,15 @@
       - krb5-user
       - nfs-common
       - rsync
+      - tmpreaper
     state: present
     update_cache: yes
+
+- name: Comment out SHOWWARNING line in tmpreaper config
+  ansible.builtin.lineinfile:
+    path: /etc/tmpreaper.conf
+    regexp: "SHOWWARNING="
+    state: absent
 
 - name: Download DRMAA
   get_url:
@@ -36,7 +43,7 @@
     dest: "/home/{{ pulsar_user.name }}/user.keytab"
 
 - name: KRB5 user ticket
-  command: "kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META"
+  command: "KRB5CCNAME=/tmp/krb5cc_{{ pulsar_user.name }} kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META"
   become_user: '{{ pulsar_user.name }}'
 
 - name: KRB5 ticket renewal
@@ -44,12 +51,12 @@
     name: krb5 ticket
     minute: '1'
     hour: '*/6'
-    job: 'kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META'
+    job: 'KRB5CCNAME=/tmp/krb5cc_{{ pulsar_user.name }} kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META'
     user: '{{ pulsar_user.name }}'
 
 - name: KRB5 ticket creation on reboot
   cron:
     name: krb5 ticket on reboot
     special_time: reboot
-    job: 'kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META'
+    job: 'KRB5CCNAME=/tmp/krb5cc_{{ pulsar_user.name }} kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META'
     user: '{{ pulsar_user.name }}'
