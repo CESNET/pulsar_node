@@ -20,6 +20,9 @@ SHELL=/bin/bash
 1 */6 * * * kinit -k -t /home/galaxyelixir/galaxyelixir.keytab galaxyelixir@META
 # kde galaxyelixir je moj pulsar/galaxy uzivatel
 
+# je nutne vytvorit zlozku .drmaa na prislusnom ulozisku (pre mna storage/brno11-elixir/home/galaxyelixir)
+mkdir -p  <galaxy home on shared storage>/.drmaa
+
 # na spravnom ulozisku (pre mna storage/brno11-elixir/home/galaxyelixir) nainstalovat condu a do base env pridat mambu
 wget https://repo.anaconda.com/miniconda/Miniconda3-py39_23.1.0-1-Linux-x86_64.sh
 bash Miniconda3-py39_23.1.0-1-Linux-x86_64.sh
