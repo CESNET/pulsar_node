@@ -5,10 +5,11 @@ rabbitmq_user: "{{ galaxy_user.name }}" # DEMON: must be user running connected 
 rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 
 pulsar_root: /opt/pulsar
-pulsar_package_version: "0.15.3"
+pulsar_package_version: "0.15.6"
 pulsar_network_homedir: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}"
 pulsar_data_dir: "{{ pulsar_network_homedir }}/pulsar-umsa"
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
+pulsar_cleanup_dir: "{{ pulsar_data_dir }}/files/cleanup_jobs"
 pulsar_persistence_dir: "{{ pulsar_root }}/files/persistent"
 pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
 pulsar_singularity_cachedir: "{{ pulsar_network_homedir }}/.singularity"
@@ -34,6 +35,7 @@ pulsar_systemd_state: started
 pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
   - DRMAA_LIBRARY_PATH="/home/{{ galaxy_user.name }}/pbs-drmaa-{{ pbs_drmaa_version }}/pbs_drmaa/.libs/libdrmaa.so"
+  - KRB5CCNAME="/tmp/krb5cc_{{ galaxy_user.name }}"
 
 pulsar_create_user: false
 pulsar_user:
@@ -62,7 +64,7 @@ pulsar_yaml_config:
   tool_dependency_dir: "{{ pulsar_dependencies_dir }}"
   # The following are the settings for the pulsar server to contact the message queue with related timeouts etc.
   message_queue_url: "pyamqp://{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ rabbitmq_hostname }}:{{ rabbitmq_port }}/{{ rabbitmq_vhost }}?ssl=true"
-  min_polling_interval: 0.5
+  min_polling_interval: 60
   amqp_publish_retry: True
   amqp_publish_retry_max_retries: 5
   amqp_publish_retry_interval_start: 10
@@ -71,23 +73,23 @@ pulsar_yaml_config:
   # We also need to create the dependency resolvers configuration so pulsar knows how to find and install dependencies
   # for the tools we ask it to run. The simplest method which covers 99% of the use cases is to use conda auto installs
   # similar to how Galaxy works.
-  dependency_resolution:
-    container_resolvers:
-      - type: cached_explicit_singularity
-        cache_directory: "{{ pulsar_singularity_cachedir }}"
-      - type: explicit_singularity
-        cache_directory: "{{ pulsar_singularity_cachedir }}"
-      - type: cached_mulled_singularity
-        cache_directory: "{{ pulsar_singularity_cachedir }}"
-      - type: mulled_singularity
-        cache_directory: "{{ pulsar_singularity_cachedir }}"
-    resolvers:
-      - type: conda
-        auto_init: true
-        auto_install: true
-        ensure_channels: "{{ conda_channels|join(',') }}"
-        exec: "{{ conda_exec }}"
-        prefix: "{{ conda_prefix }}"
+  container_resolvers:
+    -   type: explicit_singularity
+    -   cache_directory: /cvmfs/singularity.galaxyproject.org/all/
+        type: cached_mulled_singularity
+    -   auto_install: true
+        type: mulled_singularity
+    -   auto_install: false
+        cache_directory: /cvmfs/singularity.galaxyproject.org/all/
+        type: build_mulled_singularity
+#  dependency_resolution:
+#    resolvers:
+#    -   type: conda
+#        auto_init: true
+#        auto_install: false
+#        ensure_channels: "{{ conda_channels|join(',') }}"
+#        exec: "{{ conda_exec }}"
+#        prefix: "{{ conda_prefix }}"
   managers:
     _default_:
       type: queued_drmaa

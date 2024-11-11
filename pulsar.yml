@@ -39,10 +39,17 @@
           - virtualenv
           - libgnutls28-dev
           - squashfs-tools # DEMON: needed by singularity roles
-          - libpbspro-dev
+          - openpbs-client
+          - libopenpbs-dev
+          - tmpreaper
         state: present
         update_cache: yes
       become: yes
+    - name: Comment out SHOWWARNING line in tmpreaper config
+      ansible.builtin.lineinfile:
+        path: /etc/tmpreaper.conf
+        regexp: "SHOWWARNING="
+        state: absent
 
     - name: Mount NFS volume to share job data with worker nodes
       ansible.posix.mount:
@@ -95,7 +102,7 @@
       ansible.builtin.cron:
         name: "kinit <galaxy_user>@META after reboot"
         special_time: reboot
-        job: "kinit -k -t /home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab {{ galaxy_user.name }}@META"
+        job: "KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab {{ galaxy_user.name }}@META"
       become: yes
       become_user: "{{ galaxy_user.name }}"
     - name: Creates entry in crontab "repeatedly kinit META"
@@ -103,7 +110,7 @@
         name: "kinit <galaxy_user>@META repeatedly"
         minute: 1
         hour: "*/6"
-        job: "kinit -k -t /home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab {{ galaxy_user.name }}@META"
+        job: "KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab {{ galaxy_user.name }}@META"
       become: yes
       become_user: "{{ galaxy_user.name }}"
 
@@ -194,3 +201,24 @@
 #    - role: galaxyproject.miniconda
 #      become: true
 #      become_user: "{{ pulsar_user.name }}"
+  post_tasks:
+    - name: copy dependency_resolvers_config into pulsar config folder
+      ansible.builtin.copy:
+        src: dependency_resolvers_conf.xml
+        dest: "{{ pulsar_root }}/config/dependency_resolvers_conf.xml"
+    - name: Create cleanup_jobs dir
+      ansible.builtin.file:
+        path: "{{ pulsar_cleanup_dir }}"
+        state: directory
+        recurse: yes
+        mode: 'a+x'
+      become: yes
+      become_user: "{{ galaxy_user.name }}"      
+    - name: Creates entry in crontab "tmpreaper call in staging dir"
+      ansible.builtin.cron:
+        name: "tmpreaper in staging dir"
+        minute: "7"
+        hour: "*" 
+        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 7d {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
