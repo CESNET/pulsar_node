@@ -7,11 +7,6 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
 sudo apt-get update
 sudo apt-get install ansible -y
 
-### DOST STARA INFORMACIA - TREBA OVERIT!!!
-## INFO: bola nutna uprava suboru /etc/pbs.conf v puppetovi: zmena pbs serveru na server kde je pozadovana queue na submitovanie galaxy jobov 
-##PBS_SERVER=meta-pbs.metacentrum.cz
-#PBS_SERVER=elixir-pbs.elixir-czech.cz
-
 # Vytvorit kluc pre pristup do git repa a zaregistrovat kluc vo svojom profile na githube
 ssh-keygen -t ed25519
 

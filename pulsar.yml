@@ -1,28 +1,14 @@
+- hosts: nometapuppet
+  roles:
+    - role: metacentrum.krbnfs
+      become: yes
+
 - hosts: pulsarservers
   vars:
     golang_gopath: '/opt/workspace-go'
     singularity_version: "3.7.4"
     singularity_go_path: "{{ golang_install_dir }}"
     pbs_drmaa_version: "1.0.19"
-
-    # Galaxy/Pulsar user setup
-    galaxy_user:
-## Specific settings for pulsar-re (needs to be moved into host_vars foder
-#      name: galaxyelixir
-#      uid:  2469
-#      nfs_home: "brno11-elixir"
-#      pulsar_prefix: pulsar-re
-## Specific settings for pulsar-cz (needs to be moved into host_vars foder
-#      name: galaxyeu
-#      uid: 5430
-#      nfs_home: "praha5-elixir"
-#      pulsar_prefix: pulsar-cz
-## Specific settings for pulsar-umsa (needs to be moved into host_vars foder
-      name: galaxyumsa
-      uid: 10456
-      nfs_home: "brno11-elixir"
-      shell: /bin/bash
-      pulsar_prefix: pulsar-umsa
 
     # Miniconda settings
     miniconda_prefix: "{{ pulsar_network_homedir }}/conda"
@@ -40,116 +26,32 @@
   vars_files:
     - group_vars/secret.yml
   pre_tasks:
-    - name: Install some packages
-      package:
-        name:
-          - build-essential
-          - git
-          - python3-dev
-          - libcurl4-openssl-dev
-          - libssl-dev
-          - virtualenv
-          - libgnutls28-dev
-          - squashfs-tools # DEMON: needed by singularity roles
-          - openpbs-client
-          - libopenpbs-dev
-          - tmpreaper
-        state: present
-        update_cache: yes
+    - group:
+        name: "{{ pulsar_user.group }}"
+        gid: "{{ pulsar_user.gid }}"
       become: yes
-    - name: Comment out SHOWWARNING line in tmpreaper config
-      ansible.builtin.lineinfile:
-        path: /etc/tmpreaper.conf
-        regexp: "SHOWWARNING="
-        state: absent
-
-    - name: Mount NFS volume to share job data with worker nodes
-      ansible.posix.mount:
-        src: "storage-{{ galaxy_user.nfs_home }}.metacentrum.cz:/"
-        path: "/storage/{{ galaxy_user.nfs_home }}"
-        opts: "sec=krb5i,proto=tcp,port=2049,intr"
-        state: mounted
-        fstype: nfs4
+    - user:
+        name: "{{ pulsar_user.name }}"
+        uid: "{{ pulsar_user.uid }}"
+        group: "{{ pulsar_user.group }}"
+        shell: /bin/bash
       become: yes
 
-    - name: Add Galaxy/Pulsar user
-      ansible.builtin.user:
-        name: "{{ galaxy_user.name }}"
-        comment: Galaxy/Pulsar user
-        uid: "{{ galaxy_user.uid | default(omit) }}"
-        group: "{{ galaxy_user.group | default(omit) }}"
-        create_home: "{{ galaxy_user.create_home | default('true') }}"
-        home: "{{ galaxy_user.home | default(omit) }}"
-        shell: "{{ galaxy_user.shell | default(omit) }}"
-        system: "{{ galaxy_user.system | default('false') }}"
-        local: "{{ galaxy_user.local | default(omit) }}"
-
-    - name: Check if keytab exists
-      stat:
-        path: "/home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab"
-      register: keytab_exists
-    - name: Copy galaxy user's keytab from home at skirit to home here
-      ansible.builtin.shell:
-        cmd: "scp {{ galaxy_user.name }}@skirit.metacentrum.cz:~/{{ galaxy_user.name }}.keytab /home/{{ galaxy_user.name }}/"
-      become: yes
-      become_user: "{{ galaxy_user.name }}"
-      when: not keytab_exists.stat.exists
-
-    - name: Creates env var BASH_ENV in crontab
-      ansible.builtin.cron:
-        name: BASH_ENV
-        env: yes
-        job: ~/.bashrc
-      become: yes
-      become_user: "{{ galaxy_user.name }}"
-    - name: Creates env var SHELL in crontab
-      ansible.builtin.cron:
-        name: SHELL
-        env: yes
-        job: /bin/bash
-        insertafter: BASH_ENV
-      become: yes
-      become_user: "{{ galaxy_user.name }}"
-    - name: Creates entry in crontab "@reboot kinit META"
-      ansible.builtin.cron:
-        name: "kinit <galaxy_user>@META after reboot"
-        special_time: reboot
-        job: "KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab {{ galaxy_user.name }}@META"
-      become: yes
-      become_user: "{{ galaxy_user.name }}"
-    - name: Creates entry in crontab "repeatedly kinit META"
-      ansible.builtin.cron:
-        name: "kinit <galaxy_user>@META repeatedly"
-        minute: 1
-        hour: "*/6"
-        job: "KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/{{ galaxy_user.name }}.keytab {{ galaxy_user.name }}@META"
-      become: yes
-      become_user: "{{ galaxy_user.name }}"
-
-    - name: Download pbs-drmaa library
-      ansible.builtin.get_url:
-        url: "https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-{{ pbs_drmaa_version }}.tar.gz?viasf=1"
-        dest: "/home/{{ galaxy_user.name }}/pbs-drmaa.tar.gz"
-      become: yes
-      become_user: "{{ galaxy_user.name }}"
-    - name: Extract pbs-drmaa.tar.gz
-      ansible.builtin.unarchive:
-        src: "/home/{{ galaxy_user.name }}/pbs-drmaa.tar.gz"
-        dest: "/home/{{ galaxy_user.name }}"
-      become: yes
-      become_user: "{{ galaxy_user.name }}"
-    - name: Install pbs-drmaa library
-      ansible.builtin.shell:
-        cmd: "cd /home/{{ galaxy_user.name }}/pbs-drmaa-{{ pbs_drmaa_version }} && ./configure && make && make check"
-      become: yes
-      become_user: "{{ galaxy_user.name }}"
-    - name: Create .drmaa folder in NFS home
-      ansible.builtin.file:
-        path: "/storage/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/.drmaa"
+    - name: Create pulsar root
+      file:
+        path: "{{ pulsar_root }}"
         state: directory
+        owner: "{{ pulsar_user.name }}"
+        group: "{{ pulsar_user.group }}"
       become: yes
-      become_user: "{{ galaxy_user.name }}"
-
+    - name: Create persistent files folder
+      ansible.builtin.file:
+        path: "{{ pulsar_persistence_dir }}"
+        state: directory
+        recurse: yes
+        mode: 'a+x'
+        owner: "{{ pulsar_user.name }}"
+        
     - name: Check for Miniconda existence
       stat:
         path: "{{ miniconda_prefix }}/bin/conda"
@@ -198,24 +100,27 @@
       become_user: "{{ galaxy_user.name }}"
       when: not mamba_exists.stat.exists
 
-    - name: Create persistent files folder
-      ansible.builtin.file:
-        path: "{{ pulsar_persistence_dir }}"
-        state: directory
-        recurse: yes
-        mode: 'a+x'
-        owner: "{{ pulsar_user.name }}"
-
   roles:
-    - gantsign.golang
-    - cyverse-ansible.singularity
-    - galaxyproject.pulsar
+    - role: metacentrum.pulsar
+      become: yes
+#    - gantsign.golang
+#    - cyverse-ansible.singularity
+    - role: galaxyproject.pulsar
+      become: yes
+      become_user: "{{ pulsar_user.name }}"
+
   post_tasks:
-    ## DEMON: This task might be necessary to comment ou for pulsar-re
+    ## DEMON: This task might be necessary to comment out for pulsar-re
     - name: copy dependency_resolvers_config into pulsar config folder
       ansible.builtin.copy:
         src: dependency_resolvers_conf.xml
         dest: "{{ pulsar_root }}/config/dependency_resolvers_conf.xml"
+    - name: Create .drmaa folder in NFS home
+      ansible.builtin.file:
+        path: "{{ pulsar_network_homedir }}/.drmaa"
+        state: directory
+      become: yes
+      become_user: "{{ pulsar_user.name }}"
     - name: Create cleanup_jobs dir
       ansible.builtin.file:
         path: "{{ pulsar_cleanup_dir }}"
