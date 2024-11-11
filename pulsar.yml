@@ -1,20 +1,23 @@
 - hosts: pulsarservers
   vars:
-    # Golang
     golang_gopath: '/opt/workspace-go'
-    # Singularity target version
     singularity_version: "3.7.4"
     singularity_go_path: "{{ golang_install_dir }}"
-    # pbs-drmaa library version
     pbs_drmaa_version: "1.0.19"
     # Galaxy/Pulsar user setup
     galaxy_user:
-      name: galaxyeu
-      uid: 5430
+## Specific settings for pulsar-cz (needs to be moved into host_vars foder
+#      name: galaxyeu
+#      uid: 5430
+#      shell: /bin/bash
+#      nfs_home: "praha5-elixir"
+#    miniconda_prefix: "{{ pulsar_network_homedir }}/miniconda3"
+      name: galaxyumsa
+      uid: 10456
       shell: /bin/bash
-      nfs_home: "praha5-elixir"
+      nfs_home: "brno11-elixir"
     # Miniconda settings
-    miniconda_prefix: "{{ pulsar_network_homedir }}/miniconda3"
+    miniconda_prefix: "{{ pulsar_network_homedir }}/conda"
     miniconda_version: 23.1.0
     miniconda_base_env_packages: ['mamba']
     miniconda_channels:
@@ -23,7 +26,7 @@
       - 'iuc'
       - 'r'
       - 'anaconda'
-#      - 'petrnovak'
+      - 'petrnovak'
       - 'defaults'
   vars_files:
     - group_vars/secret.yml
@@ -50,6 +53,27 @@
         path: /etc/tmpreaper.conf
         regexp: "SHOWWARNING="
         state: absent
+
+    - name: Mount NFS volume to share job data with worker nodes
+      ansible.posix.mount:
+        src: "storage-{{ galaxy_user.nfs_home }}.metacentrum.cz:/"
+        path: "/auto/{{ galaxy_user.nfs_home }}"
+        opts: "sec=krb5i,proto=tcp,port=2049,intr"
+        state: mounted
+        fstype: nfs4
+      become: yes
+
+    - name: Add Galaxy/Pulsar user
+      ansible.builtin.user:
+        name: "{{ galaxy_user.name }}"
+        comment: Galaxy/Pulsar user
+        uid: "{{ galaxy_user.uid | default(omit) }}"
+        group: "{{ galaxy_user.group | default(omit) }}"
+        create_home: "{{ galaxy_user.create_home | default('true') }}"
+        home: "{{ galaxy_user.home | default(omit) }}"
+        shell: "{{ galaxy_user.shell | default(omit) }}"
+        system: "{{ galaxy_user.system | default('true') }}"
+        local: "{{ galaxy_user.local | default(omit) }}"
 
     - name: Check if keytab exists
       stat:
@@ -93,30 +117,94 @@
       become: yes
       become_user: "{{ galaxy_user.name }}"
 
-    - name: Mount NFS volume to share job data with worker nodes
-      ansible.posix.mount:
-        src: "storage-{{ item }}.metacentrum.cz:/"
-        path: "/auto/{{ item }}"
-        opts: "sec=krb5i,proto=tcp,port=2049,intr"
-        state: mounted
-        fstype: nfs4
+    - name: Download pbs-drmaa library
+      ansible.builtin.get_url:
+        url: "https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-{{ pbs_drmaa_version }}.tar.gz?viasf=1"
+        dest: "/home/{{ galaxy_user.name }}/pbs-drmaa.tar.gz"
       become: yes
-      loop:
-         - brno11-elixir
-         - praha5-elixir
+      become_user: "{{ galaxy_user.name }}"
+    - name: Extract pbs-drmaa.tar.gz
+      ansible.builtin.unarchive:
+        src: "/home/{{ galaxy_user.name }}/pbs-drmaa.tar.gz"
+        dest: "/home/{{ galaxy_user.name }}"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Install pbs-drmaa library
+      ansible.builtin.shell:
+        cmd: "cd /home/{{ galaxy_user.name }}/pbs-drmaa-{{ pbs_drmaa_version }} && ./configure && make && make check"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Create .drmaa folder in NFS home
+      ansible.builtin.shell:
+        cmd: "mkdir -p /auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/.drmaa"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+
+    - name: Check for Miniconda existence
+      stat:
+        path: "{{ miniconda_prefix }}/bin/conda"
+      register: miniconda_exists
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Download Miniconda installer
+      ansible.builtin.get_url:
+        url: "https://repo.anaconda.com/miniconda/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh"
+        dest: "/home/{{ galaxy_user.name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+      when: not miniconda_exists.stat.exists
+    - name: Install Miniconda to NFS home
+      ansible.builtin.shell:
+        cmd: "/bin/bash /home/{{ galaxy_user.name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh -b -p {{ miniconda_prefix }}"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+      when: not miniconda_exists.stat.exists
+    - name: Ensure conda folder is executable
+      ansible.builtin.file:
+        path: "{{ miniconda_prefix }}/bin"
+        state: directory
+        recurse: yes
+        mode: 'a+x'
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Check for mamba bin
+      stat:
+        path: "{{ miniconda_prefix }}/bin/mamba"
+      register: mamba_exists
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+    - name: Activate base env and install mamba
+      ansible.builtin.command: "{{ miniconda_prefix }}/bin/conda install -y -c conda-forge mamba"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+      when: not mamba_exists.stat.exists
+    - name: Ensure conda folder is executable again
+      ansible.builtin.file:
+        path: "{{ miniconda_prefix }}/bin"
+        state: directory
+        recurse: yes
+        mode: 'a+x'
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
+      when: not mamba_exists.stat.exists
+
+    - name: Create persistent files folder
+      ansible.builtin.file:
+        path: "{{ pulsar_persistence_dir }}"
+        state: directory
+        recurse: yes
+        mode: 'a+x'
+        owner: "{{ pulsar_user.name }}"
 
   roles:
     - gantsign.golang
     - cyverse-ansible.singularity
     - galaxyproject.pulsar
-    #- role: galaxyproject.miniconda
-    #- role: andrewrothstein.miniconda
-    #  become: true
-    #  become_user: "{{ pulsar_user.name }}"
+#    - galaxyproject.cvmfs
   post_tasks:
     - name: copy dependency_resolvers_config into pulsar config folder
       ansible.builtin.copy:
-        src: dependency_resolvers_conf.xml  
+        src: dependency_resolvers_conf.xml
         dest: "{{ pulsar_root }}/config/dependency_resolvers_conf.xml"
     - name: Create cleanup_jobs dir
       ansible.builtin.file:
@@ -131,6 +219,6 @@
         name: "tmpreaper in staging dir"
         minute: "7"
         hour: "*" 
-        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 3d {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
+        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 7d {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
       become: yes
       become_user: "{{ galaxy_user.name }}"
