@@ -13,7 +13,7 @@ rabbitmq_user: "pulsar" # DEMON: must be user running connected Galaxy server
 rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 
 #pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-gxit
-pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-dev
+#pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-dev
 
 pulsar_user:
   name: galaxyelixir
