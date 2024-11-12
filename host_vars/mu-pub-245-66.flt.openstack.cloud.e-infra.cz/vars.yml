@@ -1,3 +1,11 @@
+galaxy_user:
+## Specific settings for pulsar-re (needs to be moved into host_vars foder
+  name: galaxyelixir
+  uid:  2469
+  gid: 10145
+  nfs_home: "brno11-elixir"
+  pulsar_prefix: pulsar-dev
+  
 #rabbitmq_hostname: "galaxy-gxit.grid.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
 rabbitmq_hostname: "mu-pub-245-177.flt.openstack.cloud.e-infra.cz"
 rabbitmq_vhost: "pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
