@@ -37,20 +37,15 @@
         shell: /bin/bash
       become: yes
 
-    - name: Create pulsar root
-      file:
-        path: "{{ pulsar_root }}"
-        state: directory
-        owner: "{{ pulsar_user.name }}"
-        group: "{{ pulsar_user.group }}"
-      become: yes
-    - name: Create persistent files folder
+    - name: Create pulsar root and persistent files folder
       ansible.builtin.file:
         path: "{{ pulsar_persistence_dir }}"
         state: directory
         recurse: yes
-        mode: 'a+x'
+        #mode: 'a+x'
         owner: "{{ pulsar_user.name }}"
+        group: "{{ pulsar_user.group }}"
+      become: yes
         
     - name: Check for Miniconda existence
       stat:
