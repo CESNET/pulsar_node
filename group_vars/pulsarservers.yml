@@ -1,6 +1,6 @@
 pulsar_root: /opt/pulsar
 pulsar_package_version: "0.15.6"
-pulsar_network_homedir: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}"
+pulsar_network_homedir: "/storage/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}"
 pulsar_data_dir: "{{ pulsar_network_homedir }}/{{ galaxy_user.pulsar_prefix }}"
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
 pulsar_cleanup_dir: "{{ pulsar_data_dir }}/files/cleanup_jobs"
