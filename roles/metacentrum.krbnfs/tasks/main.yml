@@ -1,5 +1,9 @@
 ---
-
+- name: Required packages
+  package:
+    name:
+      - gpg
+      
 - name: Metacentrum repo key
   apt_key:
     url: https://repo.metacentrum.cz/key.asc
