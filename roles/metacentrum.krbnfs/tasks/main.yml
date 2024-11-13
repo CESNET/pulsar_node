@@ -12,7 +12,7 @@
 
 - name: Metacentrum repo
   apt_repository:
-    repo: "deb https://repo.metacentrum.cz/ ansible_facts['lsb']['codename'] main pilot"
+    repo: "deb https://repo.metacentrum.cz/ {{ ansible_facts['lsb']['codename'] }} main pilot"
     filename: meta_repo
   when: ansible_os_family == 'Debian'
 
