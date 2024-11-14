@@ -27,13 +27,13 @@
     - group_vars/secret.yml
   pre_tasks:
     - group:
-        name: "{{ pulsar_user.group }}"
-        gid: "{{ pulsar_user.gid }}"
+        name: "{{ galaxy_user.group }}"
+        gid: "{{ galaxy_user.gid }}"
       become: yes
     - user:
-        name: "{{ pulsar_user.name }}"
-        uid: "{{ pulsar_user.uid }}"
-        group: "{{ pulsar_user.group }}"
+        name: "{{ galaxy_user.name }}"
+        uid: "{{ galaxy_user.uid }}"
+        group: "{{ galaxy_user.group }}"
         shell: /bin/bash
       become: yes
 
@@ -43,8 +43,8 @@
         state: directory
         recurse: yes
         #mode: 'a+x'
-        owner: "{{ pulsar_user.name }}"
-        group: "{{ pulsar_user.group }}"
+        owner: "{{ galaxy_user.name }}"
+        group: "{{ galaxy_user.group }}"
       become: yes
         
     - name: Check for Miniconda existence
@@ -102,7 +102,7 @@
 #    - cyverse-ansible.singularity
     - role: galaxyproject.pulsar
       become: yes
-      become_user: "{{ pulsar_user.name }}"
+      become_user: "{{ galaxy_user.name }}"
 
   post_tasks:
     ## DEMON: This task might be necessary to comment out for pulsar-re
@@ -115,7 +115,7 @@
         path: "{{ pulsar_network_homedir }}/.drmaa"
         state: directory
       become: yes
-      become_user: "{{ pulsar_user.name }}"
+      become_user: "{{ galaxy_user.name }}"
     - name: Create cleanup_jobs dir
       ansible.builtin.file:
         path: "{{ pulsar_cleanup_dir }}"

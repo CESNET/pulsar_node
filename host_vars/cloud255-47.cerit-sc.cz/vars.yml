@@ -7,7 +7,7 @@ rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 #pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-gxit
 pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-cz-test
 
-pulsar_user:
+galaxy_user:
   name: galaxyelixir
   uid: 2469
   gid: 10145

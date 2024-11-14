@@ -20,17 +20,13 @@ pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
 #  - DRMAA_LIBRARY_PATH="/home/{{ galaxy_user.name }}/pbs-drmaa-{{ pbs_drmaa_version }}/pbs_drmaa/.libs/libdrmaa.so"
   - DRMAA_LIBRARY_PATH="/opt/drmaa/lib/libdrmaa.so"
-  - KRB5CCNAME="/tmp/krb5cc_{{ pulsar_user.name }}"
+  - KRB5CCNAME="/tmp/krb5cc_{{ galaxy_user.name }}"
 pulsar_systemd_nofile_limit: 100000 # DEMON: This settings is pulsar-re specific, but could be usefull in general
 
 drmaa_version: 1.0.19
 pbs_server: pbs-m1.metacentrum.cz
 
 pulsar_create_user: false
-#pulsar_user:
-#  name: "{{ galaxy_user.name }}"
-#  shell: /bin/bash
-#  #pulsar_group: "{{ pulsar_user.name }}"
 
 pulsar_optional_dependencies:
   - pyOpenSSL

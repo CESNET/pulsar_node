@@ -40,23 +40,23 @@
 - name: KRB5 user keytab
   copy:
     content: "{{ krb5_user_keytab }}"
-    dest: "/home/{{ pulsar_user.name }}/user.keytab"
+    dest: "/home/{{ galaxy_user.name }}/user.keytab"
 
 - name: KRB5 user ticket
-  command: "KRB5CCNAME=/tmp/krb5cc_{{ pulsar_user.name }} kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META"
-  become_user: '{{ pulsar_user.name }}'
+  command: "KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/user.keytab {{ galaxy_user.name }}@META"
+  become_user: '{{ galaxy_user.name }}'
 
 - name: KRB5 ticket renewal
   cron:
     name: krb5 ticket
     minute: '1'
     hour: '*/6'
-    job: 'KRB5CCNAME=/tmp/krb5cc_{{ pulsar_user.name }} kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META'
-    user: '{{ pulsar_user.name }}'
+    job: 'KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/user.keytab {{ galaxy_user.name }}@META'
+    user: '{{ galaxy_user.name }}'
 
 - name: KRB5 ticket creation on reboot
   cron:
     name: krb5 ticket on reboot
     special_time: reboot
-    job: 'KRB5CCNAME=/tmp/krb5cc_{{ pulsar_user.name }} kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META'
-    user: '{{ pulsar_user.name }}'
+    job: 'KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/user.keytab {{ galaxy_user.name }}@META'
+    user: '{{ galaxy_user.name }}'

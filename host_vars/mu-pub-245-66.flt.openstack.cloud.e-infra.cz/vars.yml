@@ -1,8 +1,9 @@
 galaxy_user:
 ## Specific settings for pulsar-re (needs to be moved into host_vars foder
-  name: galaxyelixir
-  uid:  2469
-  gid: 10145
+  name: galaxy-qa1
+  uid:  11688
+  gid: 10000
+  group: meta
   nfs_home: "brno11-elixir"
   pulsar_prefix: pulsar-dev
   
@@ -14,11 +15,3 @@ rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
 
 #pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-gxit
 #pulsar_data_dir: /storage/brno11-elixir/home/galaxyelixir/pulsar-dev
-
-pulsar_user:
-  name: galaxyelixir
-  uid: 2469
-  gid: 10145
-  shell: /bin/bash
-  group: meta
-
