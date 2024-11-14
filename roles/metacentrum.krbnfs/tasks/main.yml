@@ -40,6 +40,7 @@
   copy:
     content: "{{ krb5_nfs_keytab }}"
     dest: /etc/krb5.keytab
+    mode: 0600
 
 - name: KRB5 config
   copy:
