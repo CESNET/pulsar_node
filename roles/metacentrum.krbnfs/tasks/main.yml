@@ -3,6 +3,9 @@
   package:
     name:
       - gpg
+      - krb5-user
+      - anacron
+      - logrotate
       
 - name: Metacentrum repo key
   apt_key:
