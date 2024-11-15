@@ -3,18 +3,13 @@
     name:
       - build-essential
       - git
-      - gpg
       - python3-dev
       - libcurl4-openssl-dev
       - libssl-dev
       - virtualenv
       - libgnutls28-dev
       - squashfs-tools # DEMON: needed by singularity roles
-      - krb5-user
-      - nfs-common
       - rsync
-      - anacron
-      - logrotate
       - tmpreaper
     state: present
     update_cache: yes
