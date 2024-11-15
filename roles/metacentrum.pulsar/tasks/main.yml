@@ -60,3 +60,52 @@
     special_time: reboot
     job: 'KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/user.keytab {{ galaxy_user.name }}@META'
     user: '{{ galaxy_user.name }}'
+
+- name: Check for Miniconda existence
+  stat:
+    path: "{{ miniconda_prefix }}/bin/conda"
+  register: miniconda_exists
+  become: yes
+  become_user: "{{ galaxy_user.name }}"
+- name: Download Miniconda installer
+  ansible.builtin.get_url:
+    url: "https://repo.anaconda.com/miniconda/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh"
+    dest: "/home/{{ galaxy_user.name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh"
+  become: yes
+  become_user: "{{ galaxy_user.name }}"
+  when: not miniconda_exists.stat.exists
+- name: Install Miniconda to NFS home
+  ansible.builtin.shell:
+    cmd: "/bin/bash /home/{{ galaxy_user.name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh -b -p {{ miniconda_prefix }}"
+  become: yes
+  become_user: "{{ galaxy_user.name }}"
+  when: not miniconda_exists.stat.exists
+- name: Ensure conda folder is executable
+  ansible.builtin.file:
+    path: "{{ miniconda_prefix }}/bin"
+    state: directory
+    recurse: yes
+    mode: 'a+x'
+  become: yes
+  become_user: "{{ galaxy_user.name }}"
+- name: Check for mamba bin
+  stat:
+    path: "{{ miniconda_prefix }}/bin/mamba"
+  register: mamba_exists
+  become: yes
+  become_user: "{{ galaxy_user.name }}"
+- name: Activate base env and install mamba
+  ansible.builtin.command: "{{ miniconda_prefix }}/bin/conda install -y -c conda-forge mamba"
+  become: yes
+  become_user: "{{ galaxy_user.name }}"
+  when: not mamba_exists.stat.exists
+- name: Ensure conda folder is executable again
+  ansible.builtin.file:
+    path: "{{ miniconda_prefix }}/bin"
+    state: directory
+    recurse: yes
+    mode: 'a+x'
+  become: yes
+  become_user: "{{ galaxy_user.name }}"
+  when: not mamba_exists.stat.exists
+
