@@ -13,9 +13,9 @@ runs:
         echo "$SSH_PRIVATE_KEY" > $HOME/.ssh/id_rsa
         ssh -f -o StrictHostKeyChecking=no "$TARGET_USER@$TARGET_HOSTNAME" hostname
 
-#    - name: Install Ansible requirements
-#      shell: bash
-#      run: ansible-galaxy install -p roles -r requirements.yml
+    - name: Install Ansible requirements
+      shell: bash
+      run: ansible-galaxy install -p roles -r requirements.yml
 
     - name: Vault password
       shell: bash
