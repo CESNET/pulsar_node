@@ -53,8 +53,8 @@
 #    - gantsign.golang
 #    - cyverse-ansible.singularity
     - role: galaxyproject.pulsar
-      become: yes
-      become_user: "{{ galaxy_user.name }}"
+#      become: yes
+#      become_user: "{{ galaxy_user.name }}"
 
   post_tasks:
     ## DEMON: This task might be necessary to comment out for pulsar-re
