@@ -43,7 +43,7 @@
     dest: "/home/{{ galaxy_user.name }}/user.keytab"
 
 - name: KRB5 user ticket
-  command: "KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/user.keytab {{ galaxy_user.name }}@META"
+  command: "kinit -k -t /home/{{ galaxy_user.name }}/user.keytab {{ galaxy_user.name }}@META"
   become_user: '{{ galaxy_user.name }}'
 
 - name: KRB5 ticket renewal
@@ -51,14 +51,14 @@
     name: krb5 ticket
     minute: '1'
     hour: '*/6'
-    job: 'KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/user.keytab {{ galaxy_user.name }}@META'
+    job: 'kinit -k -t /home/{{ galaxy_user.name }}/user.keytab {{ galaxy_user.name }}@META'
     user: '{{ galaxy_user.name }}'
 
 - name: KRB5 ticket creation on reboot
   cron:
     name: krb5 ticket on reboot
     special_time: reboot
-    job: 'KRB5CCNAME=/tmp/krb5cc_{{ galaxy_user.name }} kinit -k -t /home/{{ galaxy_user.name }}/user.keytab {{ galaxy_user.name }}@META'
+    job: 'kinit -k -t /home/{{ galaxy_user.name }}/user.keytab {{ galaxy_user.name }}@META'
     user: '{{ galaxy_user.name }}'
 
 - name: Check for Miniconda existence
