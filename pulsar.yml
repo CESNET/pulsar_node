@@ -5,6 +5,7 @@
 
 - hosts: pulsarservers
   vars:
+    pulsar_user: "{{ galaxy_user.name }}"
     golang_gopath: '/opt/workspace-go'
     singularity_version: "3.7.4"
     singularity_go_path: "{{ golang_install_dir }}"
