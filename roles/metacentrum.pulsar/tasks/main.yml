@@ -13,6 +13,8 @@
       - krb5-user
       - nfs-common
       - rsync
+      - anacron
+      - logrotate
       - tmpreaper
     state: present
     update_cache: yes
