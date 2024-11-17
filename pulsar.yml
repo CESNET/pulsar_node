@@ -63,6 +63,8 @@
       ansible.builtin.copy:
         src: dependency_resolvers_conf.xml
         dest: "{{ pulsar_root }}/config/dependency_resolvers_conf.xml"
+      become: yes
+      become_user: "{{ galaxy_user.name }}"
     - name: Create .drmaa folder in NFS home
       ansible.builtin.file:
         path: "{{ pulsar_network_homedir }}/.drmaa"
