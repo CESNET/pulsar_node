@@ -5,7 +5,7 @@
 
 - hosts: pulsarservers
   vars:
-    pulsar_user: "{{ pulsar_user.name }}"
+    pulsar_user: "{{ pulsar.user_name }}"
     golang_gopath: '/opt/workspace-go'
     singularity_version: "3.7.4"
     singularity_go_path: "{{ golang_install_dir }}"
@@ -28,13 +28,13 @@
     - group_vars/secret.yml
   pre_tasks:
     - group:
-        name: "{{ pulsar_user.group }}"
-        gid: "{{ pulsar_user.gid }}"
+        name: "{{ pulsar.group }}"
+        gid: "{{ pulsar.gid }}"
       become: yes
     - user:
-        name: "{{ pulsar_user.name }}"
-        uid: "{{ pulsar_user.uid }}"
-        group: "{{ pulsar_user.group }}"
+        name: "{{ pulsar.user_name }}"
+        uid: "{{ pulsar.uid }}"
+        group: "{{ pulsar.group }}"
         shell: /bin/bash
       become: yes
 
@@ -44,8 +44,8 @@
         state: directory
         recurse: yes
         #mode: 'a+x'
-        owner: "{{ pulsar_user.name }}"
-        group: "{{ pulsar_user.group }}"
+        owner: "{{ pulsar.user_name }}"
+        group: "{{ pulsar.group }}"
       become: yes
 
   roles:
@@ -55,7 +55,7 @@
 #    - cyverse-ansible.singularity
     - role: galaxyproject.pulsar
       become: yes
-      become_user: "{{ pulsar_user.name }}"
+      become_user: "{{ pulsar.user_name }}"
 
   post_tasks:
     ## DEMON: This task might be necessary to comment out for pulsar-re
@@ -69,7 +69,7 @@
         path: "{{ pulsar_network_homedir }}/.drmaa"
         state: directory
       become: yes
-      become_user: "{{ pulsar_user.name }}"
+      become_user: "{{ pulsar.user_name }}"
     - name: Create cleanup_jobs dir
       ansible.builtin.file:
         path: "{{ pulsar_cleanup_dir }}"
@@ -77,7 +77,7 @@
         recurse: yes
         mode: 'a+x'
       become: yes
-      become_user: "{{ pulsar_user.name }}"      
+      become_user: "{{ pulsar.user_name }}"      
     - name: Creates entry in crontab "tmpreaper call in staging dir"
       ansible.builtin.cron:
         name: "tmpreaper in staging dir"
@@ -85,4 +85,4 @@
         hour: "*/6" 
         job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 {{ pulsar_cleanup_delay }} {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
       become: yes
-      become_user: "{{ pulsar_user.name }}"
+      become_user: "{{ pulsar.user_name }}"
