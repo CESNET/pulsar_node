@@ -13,8 +13,7 @@ ssh-keygen -t ed25519
 # Stiahnut repo
 git clone <this repo>
 
-# potreba nastavit spravne uzivatela <galaxy_user>, jeho UID a spravny NFS-home v playbooku v pulsar.yml (galaxyelixir, galaxyumsa ci galaxyeu) 
-# dalej sa predpoklada, ze tento uzivatel ma priamo v domovskej slozke pod skiritom (ci inym frontendom) keytab pomenovany <galaxy_user>.keytab s pricipalom <galaxy_user>@META
+# potreba nastavit spravne uzivatela <pulsar_user>, jeho UID a spravny NFS-home v playbooku v pulsar.yml (galaxyelixir, galaxyumsa ci galaxyeu) 
 
 # vytvorit trezor
 cd pulsar_node
