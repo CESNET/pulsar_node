@@ -37,45 +37,45 @@
 - name: KRB5 user keytab
   copy:
     content: "{{ krb5_user_keytab }}"
-    dest: "/home/{{ pulsar_user.name }}/user.keytab"
+    dest: "/home/{{ pulsar.user_name }}/user.keytab"
 
 - name: KRB5 user ticket
-  command: "kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META"
-  become_user: '{{ pulsar_user.name }}'
+  command: "kinit -k -t /home/{{ pulsar.user_name }}/user.keytab {{ pulsar.user_name }}@META"
+  become_user: '{{ pulsar.user_name }}'
 
 - name: KRB5 ticket renewal
   cron:
     name: krb5 ticket
     minute: '1'
     hour: '*/6'
-    job: 'kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META'
-    user: '{{ pulsar_user.name }}'
+    job: 'kinit -k -t /home/{{ pulsar.user_name }}/user.keytab {{ pulsar.user_name }}@META'
+    user: '{{ pulsar.user_name }}'
 
 - name: KRB5 ticket creation on reboot
   cron:
     name: krb5 ticket on reboot
     special_time: reboot
-    job: 'kinit -k -t /home/{{ pulsar_user.name }}/user.keytab {{ pulsar_user.name }}@META'
-    user: '{{ pulsar_user.name }}'
+    job: 'kinit -k -t /home/{{ pulsar.user_name }}/user.keytab {{ pulsar.user_name }}@META'
+    user: '{{ pulsar.user_name }}'
 
 - name: Check for Miniconda existence
   stat:
     path: "{{ miniconda_prefix }}/bin/conda"
   register: miniconda_exists
   become: yes
-  become_user: "{{ pulsar_user.name }}"
+  become_user: "{{ pulsar.user_name }}"
 - name: Download Miniconda installer
   ansible.builtin.get_url:
     url: "https://repo.anaconda.com/miniconda/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh"
-    dest: "/home/{{ pulsar_user.name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh"
+    dest: "/home/{{ pulsar.user_name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh"
   become: yes
-  become_user: "{{ pulsar_user.name }}"
+  become_user: "{{ pulsar.user_name }}"
   when: not miniconda_exists.stat.exists
 - name: Install Miniconda to NFS home
   ansible.builtin.shell:
-    cmd: "/bin/bash /home/{{ pulsar_user.name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh -b -p {{ miniconda_prefix }}"
+    cmd: "/bin/bash /home/{{ pulsar.user_name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh -b -p {{ miniconda_prefix }}"
   become: yes
-  become_user: "{{ pulsar_user.name }}"
+  become_user: "{{ pulsar.user_name }}"
   when: not miniconda_exists.stat.exists
 - name: Ensure conda folder is executable
   ansible.builtin.file:
@@ -84,17 +84,17 @@
     recurse: yes
     mode: 'a+x'
   become: yes
-  become_user: "{{ pulsar_user.name }}"
+  become_user: "{{ pulsar.user_name }}"
 - name: Check for mamba bin
   stat:
     path: "{{ miniconda_prefix }}/bin/mamba"
   register: mamba_exists
   become: yes
-  become_user: "{{ pulsar_user.name }}"
+  become_user: "{{ pulsar.user_name }}"
 - name: Activate base env and install mamba
   ansible.builtin.command: "{{ miniconda_prefix }}/bin/conda install -y -c conda-forge mamba"
   become: yes
-  become_user: "{{ pulsar_user.name }}"
+  become_user: "{{ pulsar.user_name }}"
   when: not mamba_exists.stat.exists
 - name: Ensure conda folder is executable again
   ansible.builtin.file:
@@ -103,6 +103,6 @@
     recurse: yes
     mode: 'a+x'
   become: yes
-  become_user: "{{ pulsar_user.name }}"
+  become_user: "{{ pulsar.user_name }}"
   when: not mamba_exists.stat.exists
 
