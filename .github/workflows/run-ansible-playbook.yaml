@@ -1,6 +1,6 @@
 #! vim: ts=2 expandtab:
 
-name: deploy-qa1-ansible
+name: deploy-dev
 
 # TODO: run automatically on push to main
 on: [ workflow_dispatch ]
