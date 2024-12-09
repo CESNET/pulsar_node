@@ -1,11 +1,11 @@
 #! vim: ts=2 expandtab:
 
-name: deploy-common
+name: galaxy-qa1.galaxy.cloud.e-infra.cz
 
 runs:
   using: 'composite'
   steps:
-    - name: Create SSH key
+    - name: Make SSH connection
       shell: bash
       run: |
         mkdir -p $HOME/.ssh
