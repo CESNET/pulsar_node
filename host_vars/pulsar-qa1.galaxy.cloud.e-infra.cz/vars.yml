@@ -4,7 +4,7 @@ pulsar:
   uid:  11688
   gid: 10000
   group: meta
-  nfs_home: "praha5-elixir"
+  nfs_home: "brno11-elixir"
   nfs_prefix: pulsar-qa1
 
 install_nfs_conda: false
