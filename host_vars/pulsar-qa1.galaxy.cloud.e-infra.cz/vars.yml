@@ -6,6 +6,8 @@ pulsar:
   group: meta
   nfs_home: "praha5-elixir"
   nfs_prefix: pulsar-qa1
+
+install_nfs_conda: false
   
 #rabbitmq_hostname: "galaxy-gxit.grid.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
 rabbitmq_hostname: "galaxy-qa1.galaxy.cloud.e-infra.cz"
