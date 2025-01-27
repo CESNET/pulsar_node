@@ -1,3 +1,14 @@
-*log
-.vault-password.txt
+*~
+*.*.swp
+*.retry
+.venv
+*.log
 
+# Secrets
+.vault-password.*
+
+# Python bytecode
+*.pyc
+
+# Macs
+.DS_Store
