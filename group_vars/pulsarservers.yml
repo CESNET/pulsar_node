@@ -68,7 +68,7 @@ pulsar_yaml_config:
   persistence_directory: "{{ pulsar_persistence_dir }}"
   tool_dependency_dir: "{{ pulsar_dependencies_dir }}"
   # The following are the settings for the pulsar server to contact the message queue with related timeouts etc.
-  message_queue_url: "pyamqp://{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ rabbitmq_hostname }}:{{ rabbitmq_port }}/{{ rabbitmq_vhost }}?ssl=1"
+  message_queue_url: "pyamqp://{{ pulsar_user.name }}:{{ rabbitmq_password }}@{{ rabbitmq_hostname }}:{{ rabbitmq_port }}/{{ rabbitmq_vhost }}?ssl=1"
   min_polling_interval: 60
   amqp_publish_retry: True
   amqp_publish_retry_max_retries: 5
