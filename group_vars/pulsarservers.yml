@@ -19,7 +19,8 @@ pulsar_systemd_state: started
 pulsar_systemd_memory_limit: 6
 pulsar_systemd_environment:
   - DRMAA_LIBRARY_PATH="/opt/drmaa/lib/libdrmaa.so"
-pulsar_systemd_nofile_limit: 100000 # DEMON: This settings is pulsar-re specific, but could be usefull in general
+pulsar_systemd_service_options:
+  LimitNOFILE: 100000  # DEMON: This settings is pulsar-re specific, but could be usefull in general
 
 drmaa_version: 1.0.19
 pbs_server: pbs-m1.metacentrum.cz
