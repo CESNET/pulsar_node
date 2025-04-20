@@ -7,8 +7,6 @@ pulsar:
   nfs_home: "brno11-elixir"
   nfs_prefix: pulsar-umsa
 
-install_nfs_conda: false
-
 # Put your Galaxy server's fully qualified domain name (FQDN) (or the FQDN of the RabbitMQ server) above.
 rabbitmq_hostname: "galaxy-umsa.grid.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
 rabbitmq_vhost: "pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
