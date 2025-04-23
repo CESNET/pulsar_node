@@ -24,6 +24,7 @@ pulsar_systemd_service_options:
 
 drmaa_version: 1.0.19
 pbs_server: pbs-m1.metacentrum.cz
+install_nfs_conda: false
 
 pulsar_create_user: false
 
