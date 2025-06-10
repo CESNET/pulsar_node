@@ -1,6 +1,7 @@
 - name: Install required standard packages
   package:
     name:
+      - acl
       - build-essential
       - git
       - python3-dev
@@ -41,6 +42,7 @@
 
 - name: KRB5 user ticket
   command: "kinit -k -t /home/{{ pulsar.user_name }}/user.keytab {{ pulsar.user_name }}@META"
+  become: yes
   become_user: '{{ pulsar.user_name }}'
 
 - name: KRB5 ticket renewal
@@ -70,13 +72,13 @@
     dest: "/home/{{ pulsar.user_name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh"
   become: yes
   become_user: "{{ pulsar.user_name }}"
-  when: not miniconda_exists.stat.exists
+  when: not miniconda_exists.stat.exists and install_nfs_conda
 - name: Install Miniconda to NFS home
   ansible.builtin.shell:
     cmd: "/bin/bash /home/{{ pulsar.user_name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh -b -p {{ miniconda_prefix }}"
   become: yes
   become_user: "{{ pulsar.user_name }}"
-  when: not miniconda_exists.stat.exists
+  when: not miniconda_exists.stat.exists and install_nfs_conda
 - name: Ensure conda folder is executable
   ansible.builtin.file:
     path: "{{ miniconda_prefix }}/bin"
@@ -85,6 +87,7 @@
     mode: 'a+x'
   become: yes
   become_user: "{{ pulsar.user_name }}"
+  when: install_nfs_conda
 - name: Check for mamba bin
   stat:
     path: "{{ miniconda_prefix }}/bin/mamba"
@@ -95,7 +98,7 @@
   ansible.builtin.command: "{{ miniconda_prefix }}/bin/conda install -y -c conda-forge mamba"
   become: yes
   become_user: "{{ pulsar.user_name }}"
-  when: not mamba_exists.stat.exists
+  when: not mamba_exists.stat.exists and install_nfs_conda
 - name: Ensure conda folder is executable again
   ansible.builtin.file:
     path: "{{ miniconda_prefix }}/bin"
@@ -104,5 +107,5 @@
     mode: 'a+x'
   become: yes
   become_user: "{{ pulsar.user_name }}"
-  when: not mamba_exists.stat.exists
+  when: not mamba_exists.stat.exists and install_nfs_conda
 

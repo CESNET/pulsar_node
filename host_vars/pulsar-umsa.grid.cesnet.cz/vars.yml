@@ -1,23 +1,10 @@
 # Galaxy/Pulsar user setup
 pulsar:
-## Specific settings for pulsar-re (needs to be moved into host_vars foder
-#  user_name: galaxyelixir
-#  uid:  2469
-#  gid: 10145
-#  nfs_home: "brno11-elixir"
-#  nfs_prefix: pulsar-re
-## Specific settings for pulsar-cz (needs to be moved into host_vars foder
-#  user_name: galaxyeu
-#  uid: 5430
-#  gid:
-#  nfs_home: "praha5-elixir"
-#  nfs_prefix: pulsar-cz
-## Specific settings for pulsar-umsa (needs to be moved into host_vars foder
   user_name: galaxyumsa
   uid: 10456
-  gid: 
+  gid: 198
+  group: galaxyumsa
   nfs_home: "brno11-elixir"
-  shell: /bin/bash
   nfs_prefix: pulsar-umsa
 
 # Put your Galaxy server's fully qualified domain name (FQDN) (or the FQDN of the RabbitMQ server) above.

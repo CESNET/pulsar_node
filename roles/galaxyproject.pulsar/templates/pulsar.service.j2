@@ -21,13 +21,16 @@ ExecStart={{ pulsar_venv_dir }}/bin/uwsgi --ini-paste {{ pulsar_config_dir }}/se
 {% for env in pulsar_systemd_environment %}
 Environment={{ env }}
 {% endfor %}
-MemoryLimit={{ pulsar_systemd_memory_limit }}G
-LimitNOFILE={{ pulsar_systemd_nofile_limit }}
+MemoryMax={{ pulsar_systemd_memory_limit }}G
 Restart=always
 
 MemoryAccounting=yes
 CPUAccounting=yes
 BlockIOAccounting=yes
+
+{% for opt in pulsar_systemd_service_options | dict2items %}
+{{ opt.key }}={{ opt.value }}
+{% endfor %}
 
 [Install]
 WantedBy=multi-user.target

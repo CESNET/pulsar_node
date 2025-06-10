@@ -54,12 +54,10 @@
       file:
         path: "{{ item }}"
         state: directory
-        #owner: "{{ __pulsar_user_name }}"
-        #group: "{{ __pulsar_user_group }}"
-        #mode: "{{ __pulsar_dir_perms }}"
+#        owner: "{{ __pulsar_user_name }}"
+#        group: "{{ __pulsar_user_group }}"
+#        mode: "{{ __pulsar_dir_perms }}"
       with_items: "{{ pulsar_dirs }}"
-      become: yes
-      become_user: "{{ __pulsar_user_name }}"
 
   # TODO: for root squashing it might be useful for this to be separate from other root tasks
   remote_user: "{{ pulsar_remote_users.root | default(__pulsar_remote_user) }}"

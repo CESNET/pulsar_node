@@ -24,8 +24,6 @@
       - 'petrnovak' # DEMON: this is pecific for RE Galaxy and pulsar-re but could be usefull also for usegalaxy.cz if using RE tools
       - 'defaults'
 
-  vars_files:
-    - group_vars/secret.yml
   pre_tasks:
     - group:
         name: "{{ pulsar.group }}"

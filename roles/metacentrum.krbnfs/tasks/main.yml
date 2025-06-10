@@ -62,7 +62,8 @@
   when: ansible_os_family == 'Debian'
 
 - name: start NFS
-  systemd_service:
+#  systemd_service:
+  ansible.builtin.systemd:
     name: nfs-client.target
     enabled: true
     state: started
