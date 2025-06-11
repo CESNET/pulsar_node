@@ -4,11 +4,17 @@
 .venv
 *.log
 
-# Secrets
+### Values and Secrets ###
 .vault-password.*
+hosts
+ansible.log
 
 # Python bytecode
 *.pyc
 
 # Macs
 .DS_Store
+
+# ideally no local roles changes are present
+#roles
+
