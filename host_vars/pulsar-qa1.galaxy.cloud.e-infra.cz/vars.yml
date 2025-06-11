@@ -6,8 +6,8 @@ pulsar:
   nfs_home: "brno11-elixir"
   nfs_prefix: pulsar-qa1
 
-pulsar_package_version: 0.15.7
-  
+pulsar_package_version: 0.15.8
+
 rabbitmq_hostname: "galaxy-qa1.galaxy.cloud.e-infra.cz"
 rabbitmq_vhost: "pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
 rabbitmq_user: "{{ pulsar.user_name }}" # DEMON: must be user running connected Galaxy server
