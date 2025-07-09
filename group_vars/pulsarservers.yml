@@ -1,3 +1,8 @@
+drmaa_version: 1.0.19
+pbs_server: pbs-m1.metacentrum.cz
+install_nfs_conda: false
+
+# only galaxyproject.pulsar role vars below
 pulsar_root: /opt/pulsar
 pulsar_package_version: "0.15.6"
 pulsar_network_homedir: "/storage/{{ pulsar.nfs_home }}/home/{{ pulsar.user_name }}"
@@ -21,13 +26,7 @@ pulsar_systemd_environment:
   - DRMAA_LIBRARY_PATH="/opt/drmaa/lib/libdrmaa.so"
 pulsar_systemd_service_options:
   LimitNOFILE: 100000  # DEMON: This settings is pulsar-re specific, but could be usefull in general
-
-drmaa_version: 1.0.19
-pbs_server: pbs-m1.metacentrum.cz
-install_nfs_conda: false
-
 pulsar_create_user: false
-
 pulsar_optional_dependencies:
   - pyOpenSSL
   # For remote transfers initiated on the Pulsar end rather than the Galaxy end
@@ -40,7 +39,6 @@ pulsar_optional_dependencies:
   # psutil and pylockfile are optional dependencies but can make Pulsar more robust in small ways.
   - psutil
   - pylockfile
-
 pulsar_yaml_config:
   staging_directory: "{{ pulsar_staging_dir }}"
   persistence_directory: "{{ pulsar_persistence_dir }}"
@@ -53,7 +51,7 @@ pulsar_yaml_config:
   amqp_publish_retry_interval_start: 10
   amqp_publish_retry_interval_step: 10
   amqp_publish_retry_interval_max: 60
-  
+
   ## DEMON: this setting is specific for RE Galaxy and pulsar-re cause usegalaxy.cz and galaxy-umsa depends only on singu;arity images
   #
   ## We also need to create the dependency resolvers configuration so pulsar knows how to find and install dependencies
