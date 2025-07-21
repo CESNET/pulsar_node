@@ -84,3 +84,12 @@
         job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 {{ pulsar_cleanup_delay }} {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
       become: yes
       become_user: "{{ pulsar.user_name }}"
+    - name: Creates entry in crontab "tmpreaper call on old conda environments"
+      ansible.builtin.cron:
+        name: "tmpreaper on old conda envs"
+        minute: "7"
+        hour: "*/12" 
+        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --ctime --mtime-dir --runtime=600 {{ pulsar_cleanup_delay }} {{ miniconda_prefix }}/envs >> {{ pulsar_cleanup_dir }}/cleaning_conda_envs.log"
+      become: yes
+      become_user: "{{ pulsar.user_name }}"
+      when: install_nfs_conda
