@@ -6,9 +6,6 @@
 - hosts: pulsarservers
   vars:
     pulsar_user: "{{ pulsar.user_name }}"
-    golang_gopath: '/opt/workspace-go'
-    singularity_version: "3.7.4"
-    singularity_go_path: "{{ golang_install_dir }}"
     pbs_drmaa_version: "1.0.19"
 
     # Miniconda settings
@@ -49,8 +46,6 @@
   roles:
     - role: metacentrum.pulsar
       become: yes
-#    - gantsign.golang
-#    - cyverse-ansible.singularity
     - role: galaxyproject.pulsar
       become: yes
       become_user: "{{ pulsar.user_name }}"
@@ -75,12 +70,12 @@
         recurse: yes
         mode: 'a+x'
       become: yes
-      become_user: "{{ pulsar.user_name }}"      
+      become_user: "{{ pulsar.user_name }}"
     - name: Creates entry in crontab "tmpreaper call in staging dir"
       ansible.builtin.cron:
         name: "tmpreaper in staging dir"
         minute: "7"
-        hour: "*/6" 
+        hour: "*/6"
         job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 {{ pulsar_cleanup_delay }} {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
       become: yes
       become_user: "{{ pulsar.user_name }}"
