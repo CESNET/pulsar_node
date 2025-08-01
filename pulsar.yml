@@ -6,9 +6,7 @@
 - hosts: pulsarservers
   vars:
     pulsar_user: "{{ pulsar.user_name }}"
-    golang_gopath: '/opt/workspace-go'
-    singularity_version: "3.7.4"
-    singularity_go_path: "{{ golang_install_dir }}"
+    pbs_drmaa_version: "1.0.19"
 
     # Miniconda settings
     miniconda_prefix: "{{ pulsar_network_homedir }}/conda"
@@ -48,8 +46,6 @@
   roles:
     - role: metacentrum.pulsar
       become: yes
-#    - gantsign.golang
-#    - cyverse-ansible.singularity
     - role: galaxyproject.pulsar
       become: yes
       become_user: "{{ pulsar.user_name }}"
