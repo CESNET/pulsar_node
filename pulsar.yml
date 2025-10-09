@@ -20,7 +20,7 @@
     pulsar_prefix: pulsar-re
 
     # Miniconda settings
-    miniconda_prefix: "/storage/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/anaconda3"
+    miniconda_prefix: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/anaconda3"
     miniconda_version: 23.1.0
     miniconda_base_env_packages: ['mamba']
     miniconda_channels:
@@ -61,7 +61,7 @@
     - name: Mount NFS volume to share job data with worker nodes
       ansible.posix.mount:
         src: "storage-{{ galaxy_user.nfs_home }}.metacentrum.cz:/"
-        path: "/storage/{{ galaxy_user.nfs_home }}"
+        path: "/auto/{{ galaxy_user.nfs_home }}"
         opts: "sec=krb5i,proto=tcp,port=2049,intr"
         state: mounted
         fstype: nfs4
@@ -140,7 +140,7 @@
       become_user: "{{ galaxy_user.name }}"
     - name: Create .drmaa folder in NFS home
       ansible.builtin.file:
-        path: "/storage/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/.drmaa"
+        path: "/auto/{{ galaxy_user.nfs_home }}/home/{{ galaxy_user.name }}/.drmaa"
         state: directory
       become: yes
       become_user: "{{ galaxy_user.name }}"
