@@ -43,8 +43,8 @@ create vault for your host `ansible-vault create host_vars/<YOUR_HOST>/secret.ym
 
 The vault should contain the following vars:
 - `rabbitmq_password`: password for the messaging service ran by the galaxy server
-- `krb5_user_keytab`: keberos keytab for the service user, e.g. in the form of `"{{ 'ENCODED_KEYTAB' | b64decode }}"`
-- `krb5_nfs_keytab`: keberos keytab for the service user NFS access, e.g. in the form of `"{{ 'ENCODED_KEYTAB' | b64decode }}"`
+- `krb5_user_keytab`: kerberos keytab for the service user, e.g. in the form of `"{{ 'ENCODED_KEYTAB' | b64decode }}"`
+- `krb5_nfs_keytab`: kerberos keytab for the service user NFS access, e.g. in the form of `"{{ 'ENCODED_KEYTAB' | b64decode }}"`
 
 ## running playbook
 `$ ansible-playbook --limit <YOUR_HOST> pulsar.yml`
