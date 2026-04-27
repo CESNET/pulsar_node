@@ -8,13 +8,9 @@ pulsar:
   nfs_prefix: pulsar-re
 
 miniconda_channels: 
-  - 'conda-forge'
   - 'bioconda'
-  - 'iuc'
-  - 'r'
-  - 'anaconda'
+  - 'conda-forge'
   - 'petrnovak'
-  - 'defaults'
 miniconda_prefix: "/storage/{{ pulsar.nfs_home }}/home/{{ pulsar.user_name }}/anaconda3"
 miniconda_exec: "{{ miniconda_prefix }}/bin/mamba"
 
