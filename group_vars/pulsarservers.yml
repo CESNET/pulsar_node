@@ -1,6 +1,7 @@
 drmaa_version: 1.0.19
 pbs_server: pbs-m1.metacentrum.cz
 install_nfs_conda: false
+conda_auto_init: "{{ install_nfs_conda }}"
 pulsar_network_homedir: "/storage/{{ pulsar.nfs_home }}/home/{{ pulsar.user_name }}"
 
 # Miniconda settings
@@ -10,10 +11,6 @@ miniconda_version: 23.1.0
 miniconda_channels:
   - 'bioconda'
   - 'conda-forge'
-  - 'iuc'
-  - 'r'
-  - 'anaconda'
-  - 'defaults'
 csnt_dependency_resolvers: {}
 
 # only galaxyproject.pulsar role vars below
