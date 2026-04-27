@@ -1,0 +1,10 @@
+--- staging/down.py     2024-11-15 14:28:46.166714601 +0000
++++ staging/down.py.v2  2026-04-27 14:18:40.826792741 +0000
+@@ -103,7 +103,7 @@
+             if output_generated:
+                 self._attempt_collect_output('output', output_file)
+ 
+-            for galaxy_path, pulsar in self.pulsar_outputs.output_extras(output_file).items():
++            for galaxy_path, pulsar in self.pulsar_outputs.output_extra_files_dir(output_file).items():
+                 self._attempt_collect_output('output', path=galaxy_path, name=pulsar)
+             # else not output generated, do not attempt download.

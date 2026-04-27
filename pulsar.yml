@@ -34,6 +34,12 @@
       become_user: "{{ pulsar.user_name }}"
 
   post_tasks:
+    #DEMON: Not finished yet!!!
+    - name: Apply recursive rsync changes in pulsar package
+      ansible.posix.patch:
+        src: "files/pulsar_repo.improved_rsync/{{ pulsar_package_version }}/patch"
+        basedir: /opt/pulsar/venv/lib/python3.11/site-packages/pulsar/client
+
     - name: Create .drmaa folder in NFS home
       ansible.builtin.file:
         path: "{{ pulsar_network_homedir }}/.drmaa"
