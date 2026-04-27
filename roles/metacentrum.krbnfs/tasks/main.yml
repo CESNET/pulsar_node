@@ -10,7 +10,7 @@
 - name: Metacentrum repo key
   apt_key:
     url: https://repo.metacentrum.cz/key.asc
-    id: F11383F552848522E4EACA443573FD94A385CDB0
+#    id: F11383F552848522E4EACA443573FD94A385CDB0
   when: ansible_os_family == 'Debian'
 
 - name: Metacentrum repo

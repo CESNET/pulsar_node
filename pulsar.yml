@@ -4,22 +4,21 @@
       become: yes
 
 - hosts: pulsarservers
-  vars:
-    pulsar_user: "{{ pulsar.user_name }}"
-    pbs_drmaa_version: "1.0.19"
-
-    # Miniconda settings
-    miniconda_prefix: "{{ pulsar_network_homedir }}/conda"
-    miniconda_version: 23.1.0
-    miniconda_base_env_packages: ['mamba']
-    miniconda_channels:
-      - 'conda-forge'
-      - 'bioconda'
-      - 'iuc'
-      - 'r'
-      - 'anaconda'
-      - 'petrnovak' # DEMON: this is pecific for RE Galaxy and pulsar-re but could be usefull also for usegalaxy.cz if using RE tools
-      - 'defaults'
+#  vars:
+#    pulsar_user: "{{ pulsar.user_name }}"
+#    pbs_drmaa_version: "1.0.19"
+#
+#    # Miniconda settings
+#    miniconda_prefix: "{{ pulsar_network_homedir }}/conda"
+#    miniconda_exec: "{{ miniconda_prefix }}/bin/mamba"
+#    miniconda_version: 23.1.0
+#    miniconda_channels:
+#      - 'bioconda'
+#      - 'conda-forge'
+#      - 'iuc'
+#      - 'r'
+#      - 'anaconda'
+#      - 'defaults'
 
   pre_tasks:
     - group:
@@ -52,11 +51,11 @@
 
   post_tasks:
     ## DEMON: This task might be necessary to comment out for pulsar-re
-    - name: copy dependency_resolvers_config into pulsar config folder
-      ansible.builtin.copy:
-        src: dependency_resolvers_conf.xml
-        dest: "{{ pulsar_root }}/config/dependency_resolvers_conf.xml"
-      become: yes
+#    - name: copy dependency_resolvers_config into pulsar config folder
+#      ansible.builtin.copy:
+#        src: dependency_resolvers_conf.xml
+#        dest: "{{ pulsar_root }}/config/dependency_resolvers_conf.xml"
+#      become: yes
     - name: Create .drmaa folder in NFS home
       ansible.builtin.file:
         path: "{{ pulsar_network_homedir }}/.drmaa"

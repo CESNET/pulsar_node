@@ -1,11 +1,25 @@
 drmaa_version: 1.0.19
 pbs_server: pbs-m1.metacentrum.cz
 install_nfs_conda: false
+pulsar_network_homedir: "/storage/{{ pulsar.nfs_home }}/home/{{ pulsar.user_name }}"
+
+# Miniconda settings
+miniconda_prefix: "{{ pulsar_network_homedir }}/conda"
+miniconda_exec: "{{ miniconda_prefix }}/bin/mamba"
+miniconda_version: 23.1.0
+miniconda_channels:
+  - 'bioconda'
+  - 'conda-forge'
+  - 'iuc'
+  - 'r'
+  - 'anaconda'
+  - 'defaults'
+csnt_dependency_resolvers: {}
 
 # only galaxyproject.pulsar role vars below
+pulsar_user: "{{ pulsar.user_name }}"
 pulsar_root: /opt/pulsar
 pulsar_package_version: "0.15.6"
-pulsar_network_homedir: "/storage/{{ pulsar.nfs_home }}/home/{{ pulsar.user_name }}"
 pulsar_data_dir: "{{ pulsar_network_homedir }}/{{ pulsar.nfs_prefix }}"
 pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
 pulsar_cleanup_dir: "{{ pulsar_data_dir }}/files/cleanup_jobs"
@@ -57,23 +71,24 @@ pulsar_yaml_config:
   ## We also need to create the dependency resolvers configuration so pulsar knows how to find and install dependencies
   ## for the tools we ask it to run. The simplest method which covers 99% of the use cases is to use conda auto installs
   ## similar to how Galaxy works.
-  #dependency_resolution:
-  #  resolvers:
-  #    - type: conda
-  #      auto_init: true
-  #      auto_install: true
-  #      ensure_channels: "{{ conda_channels|join(',') }}"
-  #      exec: "{{ conda_exec }}"
-  #      prefix: "{{ conda_prefix }}"
-  container_resolvers:
-    -   type: explicit_singularity
-    -   cache_directory: /cvmfs/singularity.galaxyproject.org/all/
-        type: cached_mulled_singularity
-    -   auto_install: true
-        type: mulled_singularity
-    -   auto_install: false
-        cache_directory: /cvmfs/singularity.galaxyproject.org/all/
-        type: build_mulled_singularity
+  dependency_resolution:
+    resolvers: "{{ csnt_dependency_resolvers }}"
+#    resolvers:
+#      - type: conda
+#        auto_init: true
+#        auto_install: true
+#        ensure_channels: "{{ miniconda_channels|join(',') }}"
+#        exec: "{{ miniconda_exec }}"
+#        prefix: "{{ miniconda_prefix }}"
+#  container_resolvers:
+#    -   type: explicit_singularity
+#    -   cache_directory: /cvmfs/singularity.galaxyproject.org/all/
+#        type: cached_mulled_singularity
+#    -   auto_install: true
+#        type: mulled_singularity
+#    -   auto_install: false
+#        cache_directory: /cvmfs/singularity.galaxyproject.org/all/
+#        type: build_mulled_singularity
   managers:
     _default_:
       type: queued_drmaa
