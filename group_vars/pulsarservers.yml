@@ -63,29 +63,9 @@ pulsar_yaml_config:
   amqp_publish_retry_interval_step: 10
   amqp_publish_retry_interval_max: 60
 
-  ## DEMON: this setting is specific for RE Galaxy and pulsar-re cause usegalaxy.cz and galaxy-umsa depends only on singu;arity images
-  #
-  ## We also need to create the dependency resolvers configuration so pulsar knows how to find and install dependencies
-  ## for the tools we ask it to run. The simplest method which covers 99% of the use cases is to use conda auto installs
-  ## similar to how Galaxy works.
+  ## DEMON: resolvers is an empty list in most cases (for Galaxy supporting Singularity images over CVMFS instead of Conda)
   dependency_resolution:
     resolvers: "{{ csnt_dependency_resolvers }}"
-#    resolvers:
-#      - type: conda
-#        auto_init: true
-#        auto_install: true
-#        ensure_channels: "{{ miniconda_channels|join(',') }}"
-#        exec: "{{ miniconda_exec }}"
-#        prefix: "{{ miniconda_prefix }}"
-#  container_resolvers:
-#    -   type: explicit_singularity
-#    -   cache_directory: /cvmfs/singularity.galaxyproject.org/all/
-#        type: cached_mulled_singularity
-#    -   auto_install: true
-#        type: mulled_singularity
-#    -   auto_install: false
-#        cache_directory: /cvmfs/singularity.galaxyproject.org/all/
-#        type: build_mulled_singularity
   managers:
     _default_:
       type: queued_drmaa
