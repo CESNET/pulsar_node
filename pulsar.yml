@@ -40,6 +40,11 @@
         basedir: "{{ pulsar_package_change_dir }}"
         backup: true
         strip: 1
+    - name: Restart pulsar service after change
+      ansible.builtin.systemd:
+        state: restarted
+        name: "{{ pulsar_systemd_service_name }}"
+      become: yes
 
     - name: Create .drmaa folder in NFS home
       ansible.builtin.file:
