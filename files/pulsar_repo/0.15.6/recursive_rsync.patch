@@ -1,0 +1,53 @@
+--- a/staging/down.py  2024-11-15 14:28:46.166714601 +0000
++++ b/staging/down.py  2026-04-27 14:18:40.826792741 +0000
+@@ -103,7 +103,7 @@
+             if output_generated:
+                 self._attempt_collect_output('output', output_file)
+ 
+-            for galaxy_path, pulsar in self.pulsar_outputs.output_extras(output_file).items():
++            for galaxy_path, pulsar in self.pulsar_outputs.output_extra_files_dir(output_file).items():
+                 self._attempt_collect_output('output', path=galaxy_path, name=pulsar)
+             # else not output generated, do not attempt download.
+
+--- a/staging/__init__.py  2024-11-15 14:28:46.166714601 +0000
++++ b/staging/__init__.py  2026-04-27 14:12:38.332467975 +0000
+@@ -309,3 +309,19 @@
+         files_directory = "{}_files{}".format(basename(output_file)[0:-len(".dat")], self.path_helper.separator)
+         names = filter(lambda o: o.startswith(files_directory), self.output_directory_contents)
+         return dict(map(lambda name: (local_path(name), name), names))
++
++
++    def output_extra_files_dir(self, output_file):
++        """
++        Returns dict mapping local path to remote name.
++        """
++        print(output_file)
++        output_directory = dirname(output_file)
++
++        def local_path(name):
++            return join(output_directory, self.path_helper.local_name(name))
++
++        name = "{}_files{}".format(basename(output_file)[0:-len(".dat")], self.path_helper.separator)
++        edir = dict()
++        edir[local_path(name)] = name
++        return edir
+
+--- a/transport/ssh.py  2024-11-15 14:28:46.166714601 +0000
++++ b/transport/ssh.py  2026-04-27 14:05:24.769565794 +0000
+@@ -7,6 +7,7 @@
+ def rsync_get_file(uri_from, uri_to, user, host, port, key):
+     cmd = [
+         'rsync',
++        '-src',
+         '-e',
+         'ssh -i {} -p {} {}'.format(key, port, ' '.join(SSH_OPTIONS)),
+         '{}@{}:{}'.format(user, host, uri_from),
+@@ -19,6 +20,8 @@
+     _ensure_dir(uri_to, key, port, user, host)
+     cmd = [
+         'rsync',
++        '-src',
++        '--chmod=F664,D775',
+         '-e',
+         'ssh -i {} -p {} {}'.format(key, port, ' '.join(SSH_OPTIONS)),
+         uri_from,
