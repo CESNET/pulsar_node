@@ -25,7 +25,6 @@
     name:
       - openpbs-client
       - libopenpbs-dev
-      - singularity-ce
       - nfs-common
 
 - name: PBS config
