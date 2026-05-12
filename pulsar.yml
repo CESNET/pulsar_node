@@ -37,7 +37,7 @@
     - name: Apply recursive rsync changes in pulsar package
       ansible.posix.patch:
         src: "files/pulsar_repo/{{ pulsar_package_version }}/recursive_rsync.patch"
-        basedir: "{{ pulsar_package_change_dir }}"
+        basedir: "{{ csnt_pulsar_package_change_dir }}"
         backup: true
         strip: 1
       when: csnt_use_recursive_rsync
@@ -50,13 +50,13 @@
 
     - name: Create .drmaa folder in NFS home
       ansible.builtin.file:
-        path: "{{ pulsar_network_homedir }}/.drmaa"
+        path: "{{ csnt_pulsar_network_homedir }}/.drmaa"
         state: directory
       become: yes
       become_user: "{{ pulsar.user_name }}"
     - name: Create cleanup_jobs dir
       ansible.builtin.file:
-        path: "{{ pulsar_cleanup_dir }}"
+        path: "{{ csnt_pulsar_cleanup_dir }}"
         state: directory
         recurse: yes
         mode: 'a+x'
@@ -67,6 +67,6 @@
         name: "tmpreaper in staging dir"
         minute: "7"
         hour: "*/6"
-        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 {{ pulsar_cleanup_delay }} {{ pulsar_staging_dir }} >> {{ pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
+        job: "/usr/sbin/tmpreaper --verbose=0 --showdeleted --all --mtime --mtime-dir --runtime=600 {{ csnt_pulsar_cleanup_delay }} {{ pulsar_staging_dir }} >> {{ csnt_pulsar_cleanup_dir }}/cleaning_pulsar_files.log"
       become: yes
       become_user: "{{ pulsar.user_name }}"

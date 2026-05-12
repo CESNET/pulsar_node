@@ -25,7 +25,7 @@ pulsar:
   nfs_home: "brno11-elixir"
   nfs_prefix: pulsar-qa2
 
-install_nfs_conda: false
+csnt_install_nfs_conda: false
 
 rabbitmq_hostname: "galaxy-qa2.galaxy.cloud.e-infra.cz"
 rabbitmq_vhost: "pulsar"
