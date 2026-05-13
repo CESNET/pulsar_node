@@ -9,7 +9,6 @@
       - libssl-dev
       - virtualenv
       - libgnutls28-dev
-      - squashfs-tools # DEMON: needed by singularity roles
       - rsync
       - tmpreaper
     state: present
