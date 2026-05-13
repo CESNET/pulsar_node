@@ -12,6 +12,7 @@ miniconda_channels:
   - 'bioconda'
   - 'conda-forge'
 csnt_dependency_resolvers: {}
+csnt_use_recursive_rsync: yes
 
 # only galaxyproject.pulsar role vars below
 pulsar_user: "{{ pulsar.user_name }}"
