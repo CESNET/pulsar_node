@@ -40,11 +40,13 @@
         basedir: "{{ pulsar_package_change_dir }}"
         backup: true
         strip: 1
+      when: csnt_use_recursive_rsync
     - name: Restart pulsar service after change
       ansible.builtin.systemd:
         state: restarted
         name: "{{ pulsar_systemd_service_name }}"
       become: yes
+      when: csnt_use_recursive_rsync
 
     - name: Create .drmaa folder in NFS home
       ansible.builtin.file:
