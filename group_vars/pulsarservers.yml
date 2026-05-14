@@ -50,7 +50,6 @@ pulsar_optional_dependencies:
   - psutil
   - pylockfile
 pulsar_yaml_config:
-  conda_auto_init: "{{ csnt_install_nfs_conda }}"
   staging_directory: "{{ pulsar_staging_dir }}"
   persistence_directory: "{{ pulsar_persistence_dir }}"
   tool_dependency_dir: "{{ pulsar_dependencies_dir }}"

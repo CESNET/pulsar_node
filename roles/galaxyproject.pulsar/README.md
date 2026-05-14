@@ -220,7 +220,7 @@ Install Pulsar with directory separation and also install Galaxy for remote (Pul
       galaxy_manage_mutable_setup: no
       galaxy_manage_database: no
 ```
-          
+
 Install Pulsar into a CentOS 7 host with directory and privilege separation, systemd service configuration, webless
 mode, communication via a message queue, multiple named job managers, and submission to an HTCondor cluster:
 
@@ -241,8 +241,6 @@ mode, communication via a message queue, multiple named job managers, and submis
     pulsar_separate_privileges: yes
     pulsar_privsep_user: centos
     pulsar_yaml_config:
-      conda_auto_init: true
-      conda_auto_install: true
       assign_ids: none
       message_queue_url: "amqp://user:pass@amqp.example.org:5671//vhost?ssl=1"
       min_polling_interval: 0.5
