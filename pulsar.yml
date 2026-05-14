@@ -1,4 +1,4 @@
-- hosts: nometapuppet
+- hosts: cloudservers
   roles:
     - role: metacentrum.krbnfs
       become: yes
