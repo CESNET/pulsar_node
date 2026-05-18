@@ -6,7 +6,7 @@
       - krb5-user
       - anacron
       - logrotate
-      
+
 - name: Metacentrum repo key
   apt_key:
     url: https://repo.metacentrum.cz/key.asc
@@ -28,12 +28,12 @@
       - nfs-common
 
 - name: PBS config
-  lineinfile: 
+  lineinfile:
     path: /etc/pbs.conf
     regexp: "^{{ item.key }}="
     line: "{{ item.key }}={{ item.value }}"
   loop:
-    - { key: 'PBS_SERVER', value: '{{ pbs_server }}' }
+    - { key: 'PBS_SERVER', value: '{{ csnt_pbs_server }}' }
     - { key: 'PBS_AUTH_METHOD', value: 'GSS' }
     - { key: 'PBS_ENCRYPT_METHOD', value: 'GSS' }
     - { key: 'PBS_SUPPORTED_AUTH_METHODS', value: 'GSS,resvport' }

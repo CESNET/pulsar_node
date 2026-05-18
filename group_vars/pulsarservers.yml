@@ -1,33 +1,30 @@
-drmaa_version: 1.0.19
-pbs_server: pbs-m1.metacentrum.cz
-install_nfs_conda: false
-conda_auto_init: "{{ install_nfs_conda }}"
-pulsar_network_homedir: "/storage/{{ pulsar.nfs_home }}/home/{{ pulsar.user_name }}"
+csnt_drmaa_version: 1.0.19
+csnt_pbs_server: pbs-m1.metacentrum.cz
+csnt_install_nfs_conda: false
+csnt_pulsar_network_homedir: "/storage/{{ pulsar.nfs_home }}/home/{{ pulsar.user_name }}"
+csnt_dependency_resolvers: {}
+csnt_pulsar_data_dir: "{{ csnt_pulsar_network_homedir }}/{{ pulsar.nfs_prefix }}"
+csnt_pulsar_cleanup_dir: "{{ csnt_pulsar_data_dir }}/files/cleanup_jobs"
+csnt_pulsar_cleanup_delay: "7d" # DEMON: pulsar-re needs this to have over 30d
+csnt_pulsar_package_change_dir: "{{ pulsar_root }}/venv/lib/python3.11/site-packages/pulsar/client"
+csnt_use_recursive_rsync: yes
 
 # Miniconda settings
-miniconda_prefix: "{{ pulsar_network_homedir }}/conda"
+miniconda_prefix: "{{ csnt_pulsar_network_homedir }}/conda"
 miniconda_exec: "{{ miniconda_prefix }}/bin/mamba"
 miniconda_version: 23.1.0
 miniconda_channels:
   - 'bioconda'
   - 'conda-forge'
-csnt_dependency_resolvers: {}
-csnt_use_recursive_rsync: yes
 
 # only galaxyproject.pulsar role vars below
 pulsar_user: "{{ pulsar.user_name }}"
 pulsar_root: /opt/pulsar
 pulsar_package_version: "0.15.6"
-pulsar_data_dir: "{{ pulsar_network_homedir }}/{{ pulsar.nfs_prefix }}"
-pulsar_staging_dir: "{{ pulsar_data_dir }}/files/staging"
-pulsar_cleanup_dir: "{{ pulsar_data_dir }}/files/cleanup_jobs"
-pulsar_cleanup_delay: "7d" # DEMON: pulsar-re needs this to have over 30d
+pulsar_staging_dir: "{{ csnt_pulsar_data_dir }}/files/staging"
 pulsar_persistence_dir: "{{ pulsar_root }}/files/persistent"
-pulsar_dependencies_dir: "{{ pulsar_data_dir }}/deps"
-pulsar_singularity_cachedir: "{{ pulsar_network_homedir }}/.singularity"
-pulsar_package_change_dir: "{{ pulsar_root }}/venv/lib/python3.11/site-packages/pulsar/client"
+pulsar_dependencies_dir: "{{ csnt_pulsar_data_dir }}/deps"
 pulsar_separate_privileges: true
-pulsar_pip_install: true
 pulsar_pycurl_ssl_library: openssl
 pulsar_systemd: true
 pulsar_systemd_enabled: true

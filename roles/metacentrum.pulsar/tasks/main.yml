@@ -22,15 +22,15 @@
 
 - name: Download DRMAA
   get_url:
-    url: https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-{{ drmaa_version }}.tar.gz?viasf=1
-    dest: /tmp/pbs-drmaa-{{ drmaa_version }}.tar.gz
+    url: https://master.dl.sourceforge.net/project/pbspro-drmaa/pbs-drmaa/1.0/pbs-drmaa-{{ csnt_drmaa_version }}.tar.gz?viasf=1
+    dest: /tmp/pbs-drmaa-{{ csnt_drmaa_version }}.tar.gz
 
 - name: Install DRMAA
   shell: |
     cd /tmp
-    rm -rf pbs-drmaa-{{ drmaa_version }}
-    tar xzf pbs-drmaa-{{ drmaa_version }}.tar.gz
-    cd pbs-drmaa-{{ drmaa_version }}
+    rm -rf pbs-drmaa-{{ csnt_drmaa_version }}
+    tar xzf pbs-drmaa-{{ csnt_drmaa_version }}.tar.gz
+    cd pbs-drmaa-{{ csnt_drmaa_version }}
     ./configure --prefix /opt/drmaa
     make && make install
 
@@ -71,13 +71,13 @@
     dest: "/home/{{ pulsar.user_name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh"
   become: yes
   become_user: "{{ pulsar.user_name }}"
-  when: not miniconda_exists.stat.exists and install_nfs_conda
+  when: not miniconda_exists.stat.exists and csnt_install_nfs_conda
 - name: Install Miniconda to NFS home
   ansible.builtin.shell:
     cmd: "/bin/bash /home/{{ pulsar.user_name }}/Miniconda3-py39_{{ miniconda_version }}-1-Linux-x86_64.sh -b -p {{ miniconda_prefix }}"
   become: yes
   become_user: "{{ pulsar.user_name }}"
-  when: not miniconda_exists.stat.exists and install_nfs_conda
+  when: not miniconda_exists.stat.exists and csnt_install_nfs_conda
 - name: Ensure conda folder is executable
   ansible.builtin.file:
     path: "{{ miniconda_prefix }}/bin"
@@ -86,7 +86,7 @@
     mode: 'a+x'
   become: yes
   become_user: "{{ pulsar.user_name }}"
-  when: install_nfs_conda
+  when: csnt_install_nfs_conda
 - name: Check for mamba bin
   stat:
     path: "{{ miniconda_prefix }}/bin/mamba"
@@ -97,7 +97,7 @@
   ansible.builtin.command: "{{ miniconda_prefix }}/bin/conda install -y -c conda-forge mamba"
   become: yes
   become_user: "{{ pulsar.user_name }}"
-  when: not mamba_exists.stat.exists and install_nfs_conda
+  when: not mamba_exists.stat.exists and csnt_install_nfs_conda
 - name: Ensure conda folder is executable again
   ansible.builtin.file:
     path: "{{ miniconda_prefix }}/bin"
@@ -106,5 +106,4 @@
     mode: 'a+x'
   become: yes
   become_user: "{{ pulsar.user_name }}"
-  when: not mamba_exists.stat.exists and install_nfs_conda
-
+  when: not mamba_exists.stat.exists and csnt_install_nfs_conda

@@ -1,4 +1,4 @@
-# Galaxy/Pulsar user setup
+pulsar_package_version: 0.15.14
 pulsar:
   user_name: galaxyelixir
   uid:  2469
@@ -7,17 +7,14 @@ pulsar:
   nfs_home: "brno11-elixir"
   nfs_prefix: pulsar-re
 
-install_nfs_conda: true
-miniconda_channels: 
+miniconda_channels:
   - 'bioconda'
   - 'conda-forge'
   - 'petrnovak'
 miniconda_prefix: "/storage/{{ pulsar.nfs_home }}/home/{{ pulsar.user_name }}/anaconda3"
 miniconda_exec: "{{ miniconda_prefix }}/bin/mamba"
 
-csnt_use_recursive_rsync: yes
-pulsar_package_version: 0.15.14
-pulsar_cleanup_delay: "40d" # DEMON: pulsar-re* need this to have over 30d
+csnt_pulsar_cleanup_delay: "40d" # pulsar-re* need this to have over 30d
 csnt_dependency_resolvers:
   - type: conda
     auto_init: true
@@ -25,9 +22,10 @@ csnt_dependency_resolvers:
     ensure_channels: "{{ miniconda_channels|join(',') }}"
     exec: "{{ miniconda_exec }}"
     prefix: "{{ miniconda_prefix }}"
+csnt_install_nfs_conda: true
+csnt_use_recursive_rsync: yes
 
-# Put your Galaxy server's fully qualified domain name (FQDN) (or the FQDN of the RabbitMQ server) above.
-rabbitmq_hostname: "galaxy-re.grid.cesnet.cz" # DEMON: Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
-rabbitmq_vhost: "pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
-rabbitmq_user: "{{ pulsar.user_name }}" # DEMON: must be user running connected Galaxy server
-rabbitmq_port: 5671 # DEMON: must be port where to contact RabbitMQ server
+rabbitmq_hostname: "galaxy-re.grid.cesnet.cz" # Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
+rabbitmq_vhost: "pulsar" # must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
+rabbitmq_user: "{{ pulsar.user_name }}" # must be user running connected Galaxy server
+rabbitmq_port: 5671 # must be port where to contact RabbitMQ server
