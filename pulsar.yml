@@ -40,6 +40,7 @@
         basedir: "{{ csnt_pulsar_package_change_dir }}"
         backup: true
         strip: 1
+      become: yes
       when: csnt_use_recursive_rsync
     - name: Restart pulsar service after change
       ansible.builtin.systemd:
