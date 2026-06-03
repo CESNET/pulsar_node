@@ -19,6 +19,7 @@ miniconda_channels:
 
 # only galaxyproject.pulsar role vars below
 pulsar_user: "{{ pulsar.user_name }}"
+pulsar_group: "{{ pulsar.group }}"
 pulsar_root: /opt/pulsar
 pulsar_package_version: "0.15.6"
 pulsar_staging_dir: "{{ csnt_pulsar_data_dir }}/files/staging"
