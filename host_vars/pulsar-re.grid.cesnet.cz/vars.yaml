@@ -24,6 +24,7 @@ csnt_dependency_resolvers:
     prefix: "{{ miniconda_prefix }}"
 csnt_install_nfs_conda: true
 csnt_use_recursive_rsync: yes
+csnt_pulsar_package_change_dir: "{{ pulsar_root }}/venv/lib/python3.13/site-packages/pulsar/client"
 
 rabbitmq_hostname: "galaxy-re.grid.cesnet.cz" # Important to have proper FQDN of connected Galaxy server (or at least RabbitMQ server)
 rabbitmq_vhost: "pulsar" # must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
