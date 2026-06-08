@@ -50,3 +50,15 @@
          '-e',
          'ssh -i {} -p {} {}'.format(key, port, ' '.join(SSH_OPTIONS)),
          uri_from,
+
+--- a/amqp_exchange.py    2026-05-19 15:21:21.476706211 +0200
++++ b/amqp_exchange.py    2026-06-08 22:50:46.821191688 +0200
+@@ -230,7 +230,7 @@
+             self.publish_uuid_store[ack_uuid] = payload
+             log.debug('Requesting acknowledgement of UUID %s on queue %s', ack_uuid, ack_queue)
+         with self.connection(self.__url) as connection:
+-            with pools.producers[connection].acquire() as producer:
++            with pools.producers[connection].acquire(block=True) as producer:
+                 log.debug("%sHave producer for publishing to key %s", publish_log_prefix, key)
+                 publish_kwds = self.__prepare_publish_kwds(publish_log_prefix)
+                 producer.publish(
