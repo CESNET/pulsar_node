@@ -86,7 +86,3 @@ pulsar_yaml_config:
       postprocess_action_interval_start: 2
       postprocess_action_interval_step: 2
       postprocess_action_interval_max: 30
-
-# Pulsar should use the same job metrics plugins as Galaxy. This will automatically set `job_metrics_config_file` in
-# `pulsar_yaml_config` and create `{{ pulsar_config_dir }}/job_metrics_conf.yml`.
-#pulsar_job_metrics_plugins: "{{ galaxy_job_metrics_plugins }}"
