@@ -38,6 +38,15 @@ pulsar_systemd_environment:
 pulsar_systemd_service_options:
   LimitNOFILE: 100000  # DEMON: This settings is pulsar-re specific, but could be usefull in general
 pulsar_create_user: false
+pulsar_job_metrics_plugins:
+  - type: core
+  - type: cpuinfo
+  - type: meminfo
+  - type: hostname
+  - type: uname
+  - type: cgroup
+  # add this once released https://github.com/galaxyproject/pulsar/pull/518
+  # - type: pulsar_transfer
 pulsar_optional_dependencies:
   - pyOpenSSL
   # For remote transfers initiated on the Pulsar end rather than the Galaxy end
@@ -77,7 +86,3 @@ pulsar_yaml_config:
       postprocess_action_interval_start: 2
       postprocess_action_interval_step: 2
       postprocess_action_interval_max: 30
-
-# Pulsar should use the same job metrics plugins as Galaxy. This will automatically set `job_metrics_config_file` in
-# `pulsar_yaml_config` and create `{{ pulsar_config_dir }}/job_metrics_conf.yml`.
-#pulsar_job_metrics_plugins: "{{ galaxy_job_metrics_plugins }}"
