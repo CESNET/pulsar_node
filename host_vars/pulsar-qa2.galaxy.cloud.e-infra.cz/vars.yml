@@ -1,3 +1,4 @@
+pulsar_package_version: 0.15.16
 pulsar:
   user_name: galaxy-qa1
   uid:  11688
@@ -5,8 +6,6 @@ pulsar:
   group: meta
   nfs_home: "brno11-elixir"
   nfs_prefix: pulsar-qa2
-
-pulsar_package_version: 0.15.14
 
 rabbitmq_hostname: "galaxy-qa2.galaxy.cloud.e-infra.cz"
 rabbitmq_vhost: "pulsar" # DEMON: must be the same rabbitmq vhost set for communication between Galaxy and Pulsar set on Galaxy side
