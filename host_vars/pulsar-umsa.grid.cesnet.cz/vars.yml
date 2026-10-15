@@ -1,3 +1,6 @@
+csnt_pulsar_package_change_dir: "{{ pulsar_root }}/venv/lib/python3.13/site-packages/pulsar/client"
+pulsar_package_version: 0.15.16
+
 # Galaxy/Pulsar user setup
 pulsar:
   user_name: galaxyumsa
